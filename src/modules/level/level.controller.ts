@@ -1,8 +1,21 @@
-import { Body, Controller, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { LevelService } from './level.service';
 import { CreateLevelDto } from './dto/create-level.dto';
 import { UpdateLevelDto } from './dto/update-level.dto';
 import { AdminGuard } from 'src/common/guards/admin.guard';
+import { PublishStatus } from 'src/common/enums/publish-status.enum';
+import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
+import { LevelDto } from './dto/level.dto';
 
 @Controller('level')
 export class LevelController {
@@ -24,5 +37,22 @@ export class LevelController {
   @Patch('publish/:id')
   async publishLevel(@Param('id') id: string) {
     return this.levelService.publish(+id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Serilaize(LevelDto)
+  @Get('admin/byCategory/:categoryId')
+  getLevelsByCategoryForAdmin(
+    @Query('status') status: number = PublishStatus.Published,
+    @Param('categoryId') categoryId: string,
+  ) {
+    return this.levelService.findAllForAdmin(+categoryId, status);
+  }
+
+  @UseGuards(AdminGuard)
+  @Serilaize(LevelDto)
+  @Get('admin/:levelId')
+  findOnelForAdmin(@Param('levelId') levelId: string) {
+    return this.levelService.findLevel(+levelId);
   }
 }
