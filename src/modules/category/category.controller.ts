@@ -1,8 +1,21 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
+import { CategoryDto, PaginatedCategoriesDto } from './dto/category.dto';
+import { PublishStatus } from 'src/common/enums/publish-status.enum';
 
 @Controller('category')
 export class CategoryController {
@@ -24,5 +37,23 @@ export class CategoryController {
   @Patch('publish/:id')
   async publishCategory(@Param('id') id: string) {
     return this.categoryService.publish(+id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Serilaize(PaginatedCategoriesDto)
+  @Get('admin')
+  async getAllByAdmin(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '5',
+    @Query('status') status: number = PublishStatus.Published,
+  ) {
+    return this.categoryService.getAllForAdmin(+page, +limit, status);
+  }
+
+  @UseGuards(AdminGuard)
+  @Serilaize(CategoryDto)
+  @Get('admin/:categoryId')
+  async getOneByAdmin(@Param('categoryId') categoryId: string) {
+    return this.categoryService.findOneForAdmin(+categoryId);
   }
 }

@@ -21,12 +21,23 @@ export const databaseProviders = [
         host: 'localhost',
         port: 3306,
         username: 'root',
-        password: '2838293yo',
-        // password: '059283805928388',
+        // password: '2838293yo',
+        password: '059283805928388',
         database: 'quizzes_db',
       });
       sequelize.addModels([
-        User,Admin,Level,Answer,Quiz,QuizProgress,LevelProgress,Attempt,Certificate,Question,Points,Category
+        User,
+        Admin,
+        Level,
+        Answer,
+        Quiz,
+        QuizProgress,
+        LevelProgress,
+        Attempt,
+        Certificate,
+        Question,
+        Points,
+        Category,
       ]);
       await sequelize.sync({ alter: false });
       return sequelize;
