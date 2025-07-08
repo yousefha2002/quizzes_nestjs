@@ -16,13 +16,13 @@ import { generateToken } from 'src/common/utils/generateToken';
 export class UserService {
   constructor(@Inject(repositories.user_repository) private userRepo: typeof User) {}
 
-  async signUp(body: createUserDto, imageUrl?: string) {
+  async signUp(body: createUserDto) {
     const userByEmail = await this.findByEmail(body.email);
     if (userByEmail) {
-      throw new BadRequestException('الايميل مستخدم من قبل');
+      throw new BadRequestException('Email is already in use');
     }
     const passwordHased = await hashPassword(body.password);
-    const user = await this.userRepo.create({...body,password: passwordHased});
+    const user = await this.userRepo.create({ ...body, password: passwordHased });
     await user.save();
     const payload = { userId: user.id };
     const access_token = generateToken(payload);
@@ -32,11 +32,11 @@ export class UserService {
   async login(body: loginUserDto) {
     const userByEmail = await this.findByEmail(body.email);
     if (!userByEmail) {
-      throw new NotFoundException('الإيميل غير مستخدم');
+      throw new NotFoundException('Email not found');
     }
     const isMatch = await comparePassword(body.password, userByEmail.password);
     if (!isMatch) {
-      throw new BadRequestException('كلمة المرور خاطئة');
+      throw new BadRequestException('Incorrect password');
     }
     const payload = { userId: userByEmail.id };
     const access_token = generateToken(payload);
@@ -49,11 +49,11 @@ export class UserService {
   async changeEmail(newEmail: string, userId: number) {
     const user = await this.findById(userId);
     if (!user) {
-      throw new NotFoundException('المستخدم غير متوفر');
+      throw new NotFoundException('User not found');
     }
     const userByEmail = await this.findByEmail(newEmail);
     if (userByEmail) {
-      throw new BadRequestException('الايميل مستهدم من قبل');
+      throw new BadRequestException('Email is already in use');
     }
     user.email = newEmail;
     await user.save();
@@ -64,11 +64,11 @@ export class UserService {
     const { oldPassword, newPassword } = body;
     const user = await this.findById(userId);
     if (!user) {
-      throw new NotFoundException('المتسخدم غير متوفر');
+      throw new NotFoundException('User not found');
     }
     const isMatch = await comparePassword(oldPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException('كلمة المرور خاطئة');
+      throw new BadRequestException('Incorrect password');
     }
     const hashedPassword = await hashPassword(newPassword);
     user.password = hashedPassword;
