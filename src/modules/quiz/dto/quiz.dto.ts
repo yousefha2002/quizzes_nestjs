@@ -1,4 +1,5 @@
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
+import { QuestionDto } from '../quiz-questions.dto';
 
 export class QuizDto {
   @Expose()
@@ -18,4 +19,8 @@ export class QuizDto {
 
   @Expose()
   isPublished: boolean;
+
+  @Expose()
+  @Type(() => QuestionDto)
+  questions: QuestionDto[];
 }
