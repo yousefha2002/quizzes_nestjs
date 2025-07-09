@@ -147,7 +147,7 @@ export class QuizService {
         if (!level) throw new NotFoundException('Level not found');
         const quiz = await this.quizModel.findOne({
             where: {
-                id: quizTitle.toLowerCase(),
+                title: quizTitle.toLowerCase(),
                 isPublished: true,
                 levelId: level.id,
             },
