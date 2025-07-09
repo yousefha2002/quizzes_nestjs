@@ -7,6 +7,8 @@ import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { Question } from '../question/entities/question.entity';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
+import { Answer } from '../answer/entities/answer.entity';
+import { Sequelize } from 'sequelize';
 
 @Injectable()
 export class QuizService {
@@ -176,6 +178,54 @@ export class QuizService {
         });
         return quizzes;
     }
+
+    async getQuizQuestions(quizTitle: string) 
+    {
+        const quiz = await this.quizModel.findOne({
+            where: { title: quizTitle, isPublished: true },
+            include: [
+            {
+                model: Level,
+                include: [Category],
+            },
+            ],
+        });
+
+        if (!quiz) throw new NotFoundException('Quiz not found');
+
+        if (!quiz.level?.isPublished || !quiz.level.category?.isPublished)
+            throw new BadRequestException('Level or Category is not published');
+
+        const totalQuestions = await Question.count({
+            where: {
+            quizId: quiz.id,
+            deletedAt: null,
+            },
+        });
+
+        if (totalQuestions < quiz.numberOfQuestions) {
+            throw new BadRequestException(
+            `This quiz requires ${quiz.numberOfQuestions} questions, but only ${totalQuestions} are available.`
+            );
+        }
+
+        const questions = await Question.findAll({
+            where: {
+            quizId: quiz.id,
+            deletedAt: null,
+            },
+            include: [Answer],
+            order: [Sequelize.literal('RAND()')],
+            limit: quiz.numberOfQuestions,
+        });
+
+        return {
+            id: quiz.id,
+            title: quiz.title,
+            questions,
+        };
+}
+
 
     findById(id: number) {
         return this.quizModel.findByPk(id, {
