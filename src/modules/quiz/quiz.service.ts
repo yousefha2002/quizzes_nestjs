@@ -123,23 +123,6 @@ export class QuizService {
         return { message: 'Quiz published successfully' };
     }
 
-    async toggleFreeze(id: number, freeze: boolean) 
-    {
-        const quiz = await this.quizModel.findByPk(id);
-        if (!quiz) {
-            throw new NotFoundException('Quiz not found');
-        }
-
-        if (!quiz.isPublished) {
-            throw new BadRequestException('Quiz must be published before freezing/unfreezing');
-        }
-        await quiz.save();
-        return {
-            message: freeze
-            ? 'Quiz has been frozen successfully'
-            : 'Quiz has been unfrozen successfully',
-        };
-    }
 
     async findAllByLevelAndCategory(levelTitle: string, categoryTitle: string) 
     {
