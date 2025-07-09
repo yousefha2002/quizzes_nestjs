@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Patch, Post, Put, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { QuizService } from './quiz.service';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { CreateQuizDto } from './dto/create-quiz.dto';
@@ -9,7 +18,7 @@ import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 @Controller('quiz')
 export class QuizController {
   constructor(private readonly quizService: QuizService) {}
-  
+
   @UseGuards(AdminGuard)
   @Post('create')
   createQuiz(@Body() dto: CreateQuizDto) {
@@ -42,7 +51,20 @@ export class QuizController {
 
   @Get('byLevel/:categoryTitle/:levelTitle')
   @Serilaize(QuizListDto)
-  getByLevelAndCategory(@Param('categoryTitle') categoryTitle: string,@Param('levelTitle') levelTitle: string) {
-    return this.quizService.findAllByLevelAndCategory(levelTitle.toLowerCase(), categoryTitle.toLowerCase());
+  getByLevelAndCategory(
+    @Param('categoryTitle') categoryTitle: string,
+    @Param('levelTitle') levelTitle: string,
+  ) {
+    return this.quizService.findAllByLevelAndCategory(
+      levelTitle.toLowerCase(),
+      categoryTitle.toLowerCase(),
+    );
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('admin/byLevel/:levelId')
+  @Serilaize(QuizListDto)
+  getByLevelForAdmin(@Param('levelId') levelId: string) {
+    return this.quizService.findAllByLevelId(+levelId);
   }
 }
