@@ -39,4 +39,4 @@ export class Quiz extends Model {
 
     @HasMany(() => Attempt)
     attempts: Attempt[];
-}
+} 
