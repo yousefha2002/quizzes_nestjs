@@ -6,7 +6,7 @@ export class Category extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;
 
-    @Column({ type: DataType.STRING, allowNull: false })
+    @Column({ type: DataType.STRING, allowNull: false,unique:true })
     title: string;
 
     @Column({ type: DataType.BOOLEAN, allowNull: false,defaultValue: false })

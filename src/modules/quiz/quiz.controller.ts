@@ -16,6 +16,7 @@ import { QuizListDto } from './dto/quiz-list.dto';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { PublicQuizDto } from './dto/public-quiz.dto';
 import { QuizDto } from './dto/quiz.dto';
+import { QuizQuestionsDto } from './quiz-questions.dto';
 
 @Controller('quiz')
 export class QuizController {
@@ -70,5 +71,11 @@ export class QuizController {
       categoryTitle.toLowerCase(),
       quizTitle.toLowerCase(),
     );
+  }
+
+  @Get('questions/:quizTitle')
+  @Serilaize(QuizQuestionsDto)
+  getQuizQuestions(@Param('quizTitle') quizTitle: string) {
+    return this.quizService.getQuizQuestions(quizTitle.toLowerCase());
   }
 }
