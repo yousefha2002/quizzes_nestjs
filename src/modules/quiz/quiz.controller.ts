@@ -15,6 +15,7 @@ import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { QuizListDto } from './dto/quiz-list.dto';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { PublicQuizDto } from './dto/public-quiz.dto';
+import { QuizDto } from './dto/quiz.dto';
 
 @Controller('quiz')
 export class QuizController {
@@ -51,8 +52,8 @@ export class QuizController {
   }
 
   @UseGuards(AdminGuard)
+  @Serilaize(QuizDto)
   @Get('admin/byLevel/:levelId')
-  @Serilaize(QuizListDto)
   getByLevelForAdmin(@Param('levelId') levelId: string) {
     return this.quizService.findAllByLevelId(+levelId);
   }
@@ -62,8 +63,12 @@ export class QuizController {
   getPublicQuiz(
     @Param('categoryTitle') categoryTitle: string,
     @Param('levelTitle') levelTitle: string,
-    @Param('quizTitle') quizTitle: string
+    @Param('quizTitle') quizTitle: string,
   ) {
-    return this.quizService.getPublicQuiz(levelTitle.toLowerCase(), categoryTitle.toLowerCase(), quizTitle.toLowerCase());
+    return this.quizService.getPublicQuiz(
+      levelTitle.toLowerCase(),
+      categoryTitle.toLowerCase(),
+      quizTitle.toLowerCase(),
+    );
   }
 }

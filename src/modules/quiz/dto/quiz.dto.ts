@@ -8,8 +8,14 @@ export class QuizDto {
   title: string;
 
   @Expose()
+  headline: string;
+
+  @Expose()
   numberOfQuestions: number;
 
   @Expose()
-  isFrozen: boolean;
+  passScore: number;
+
+  @Expose()
+  isPublished: boolean;
 }
