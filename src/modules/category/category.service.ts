@@ -10,6 +10,7 @@ import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Level } from '../level/entities/level.entity';
 import { Sequelize } from 'sequelize-typescript';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class CategoryService {
@@ -30,10 +31,7 @@ export class CategoryService {
   }
 
   async update(id: number, dto: UpdateCategoryDto) {
-    const category = await this.findById(id);
-    if (!category) {
-      throw new NotFoundException('Category not found');
-    }
+    const category = await this.findAndCheck(id)
     const existing = await this.categoryModel.findOne({
       where: { title: dto.title },
     });
@@ -70,10 +68,6 @@ export class CategoryService {
     return { message: 'Category published successfully' };
   }
 
-  findById(id: number) {
-    return this.categoryModel.findByPk(id);
-  }
-
   async getAllForAdmin(page: number, limit: number, status: number) {
     const offset = (page - 1) * limit;
     const whereClause: any = {
@@ -104,11 +98,36 @@ export class CategoryService {
     };
   }
 
-  async findOneForAdmin(categoryId: number) {
+  async findAndCheck(categoryId: number) {
     const category = await this.findById(categoryId);
     if (!category) {
       throw new BadRequestException('This is an invalid category');
     }
     return category;
+  }
+
+  async getAllSummary(page: number, limit: number, status: number, name?: string) 
+  {
+    const offset = (page - 1) * limit;
+    const whereClause: any = {
+      isPublished: status,
+    };
+    if (name) {
+      whereClause.title = { [Op.like]: `%${name}%` };
+    }
+    const { rows, count } = await this.categoryModel.findAndCountAll({
+      where: whereClause,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']], 
+    });
+    return {
+      categories: rows,
+      totalPages: Math.ceil(count / limit),
+    };
+  }
+
+  findById(id: number) {
+    return this.categoryModel.findByPk(id);
   }
 }

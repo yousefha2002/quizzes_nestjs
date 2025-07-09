@@ -16,6 +16,7 @@ import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { CategoryDto, PaginatedCategoriesDto } from './dto/category.dto';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
+import { PaginatedCategoriesSummaryDto } from './dto/category-summary.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -54,6 +55,16 @@ export class CategoryController {
   @Serilaize(CategoryDto)
   @Get('admin/:categoryId')
   async getOneByAdmin(@Param('categoryId') categoryId: string) {
-    return this.categoryService.findOneForAdmin(+categoryId);
+    return this.categoryService.findAndCheck(+categoryId);
+  }
+
+  @Serilaize(PaginatedCategoriesSummaryDto)
+  @Get('all')
+  async getAllCategories(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '6',
+    @Query('name') name?: string,
+  ) {
+    return this.categoryService.getAllSummary(+page, +limit, 1,name);
   }
 }
