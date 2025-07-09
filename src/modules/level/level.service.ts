@@ -100,9 +100,9 @@ export class LevelService {
     return this.levelModel.findByPk(id);
   }
 
-  async findAllForAdmin(status: PublishStatus) {
+  async findAllForAdmin(categoryId: number, status: PublishStatus) {
     const levels = await this.levelModel.findAll({
-      where: { isPublish: status },
+      where: { categoryId },
       attributes: {
         include: [
           [
@@ -116,6 +116,16 @@ export class LevelService {
         ],
       },
       raw: true,
+      order: [['createdAt', 'DESC']],
     });
+    return levels;
+  }
+
+  async findLevel(levelId: number) {
+    const level = await this.findById(levelId);
+    if (!level) {
+      throw new NotFoundException('Level not found');
+    }
+    return level;
   }
 }
