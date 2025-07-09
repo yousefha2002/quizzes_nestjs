@@ -1,10 +1,11 @@
-import { Type } from 'class-transformer';
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateQuizDto {
     @IsString()
     @IsOptional()
     @IsNotEmpty()
+    @Transform(({ value }) => value.trim().toLowerCase())
     title?: string;
 
     @IsString()

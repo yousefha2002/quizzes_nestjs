@@ -31,9 +31,6 @@ export class Quiz extends Model {
     @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false }) 
     isPublished: boolean;
 
-    @Column({ type: DataType.BOOLEAN, allowNull: false, defaultValue: false })
-    isFrozen: boolean;
-
     @HasMany(() => Question)
     questions: Question[];
 

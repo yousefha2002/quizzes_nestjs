@@ -5,6 +5,8 @@ import { LevelService } from '../level/level.service';
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { Question } from '../question/entities/question.entity';
+import { Level } from '../level/entities/level.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class QuizService {
@@ -121,25 +123,6 @@ export class QuizService {
         return { message: 'Quiz published successfully' };
     }
 
-    async toggleFreeze(id: number, freeze: boolean) 
-    {
-        const quiz = await this.quizModel.findByPk(id);
-        if (!quiz) {
-            throw new NotFoundException('Quiz not found');
-        }
-
-        if (!quiz.isPublished) {
-            throw new BadRequestException('Quiz must be published before freezing/unfreezing');
-        }
-        quiz.isFrozen = freeze;
-        await quiz.save();
-        return {
-            message: freeze
-            ? 'Quiz has been frozen successfully'
-            : 'Quiz has been unfrozen successfully',
-        };
-    }
-
     async findAllByLevelAndCategory(levelTitle: string, categoryTitle: string) 
     {
         const level = await this.levelService.findByTitleAndCategory(levelTitle, categoryTitle);
@@ -155,6 +138,27 @@ export class QuizService {
             order: [['createdAt', 'DESC']],
         });
         return quizzes;
+    }
+
+    async getPublicQuiz(levelTitle: string, categoryTitle: string, quizTitle: string) 
+    {
+        const level = await this.levelService.findByTitleAndCategory(levelTitle, categoryTitle);
+        if (!level) throw new NotFoundException('Level not found');
+        const quiz = await this.quizModel.findOne({
+            where: {
+                title: quizTitle.toLowerCase(),
+                isPublished: true,
+                levelId: level.id,
+            },
+            include: [
+            {
+                model: Level,
+                include: [{model:Category}],
+            },
+            ],
+        });
+        if (!quiz) throw new NotFoundException('Quiz not found');
+        return quiz;
     }
 
     findById(id: number) {

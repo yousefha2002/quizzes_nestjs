@@ -5,6 +5,7 @@ import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { QuizListDto } from './dto/quiz-list.dto';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
+import { PublicQuizDto } from './dto/public-quiz.dto';
 
 @Controller('quiz')
 export class QuizController {
@@ -28,21 +29,19 @@ export class QuizController {
     return this.quizService.publish(+id);
   }
 
-  @UseGuards(AdminGuard)
-  @Patch('freeze/:id')
-  freezeQuiz(@Param('id') id: string) {
-    return this.quizService.toggleFreeze(+id, true);
-  }
-
-  @UseGuards(AdminGuard)
-  @Patch('unfreeze/:id')
-  unfreezeQuiz(@Param('id') id: string) {
-    return this.quizService.toggleFreeze(+id, false);
-  }
-
   @Get('byLevel/:categoryTitle/:levelTitle')
   @Serilaize(QuizListDto)
   getByLevelAndCategory(@Param('categoryTitle') categoryTitle: string,@Param('levelTitle') levelTitle: string) {
     return this.quizService.findAllByLevelAndCategory(levelTitle.toLowerCase(), categoryTitle.toLowerCase());
+  }
+
+  @Get('public/:categoryTitle/:levelTitle/:quizTitle')
+  @Serilaize(PublicQuizDto)
+  getPublicQuiz(
+    @Param('categoryTitle') categoryTitle: string,
+    @Param('levelTitle') levelTitle: string,
+    @Param('quizTitle') quizTitle: string
+  ) {
+    return this.quizService.getPublicQuiz(levelTitle.toLowerCase(), categoryTitle.toLowerCase(), quizTitle.toLowerCase());
   }
 }

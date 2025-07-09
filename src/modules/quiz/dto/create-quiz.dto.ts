@@ -1,8 +1,10 @@
-import { IsBoolean, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateQuizDto {
     @IsString()
     @IsNotEmpty()
+    @Transform(({ value }) => value.trim().toLowerCase())
     title: string;
 
     @IsString()

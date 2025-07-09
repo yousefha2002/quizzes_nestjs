@@ -9,7 +9,4 @@ export class QuizListDto {
 
     @Expose()
     numberOfQuestions: number;
-
-    @Expose()
-    isFrozen: boolean;
 }
