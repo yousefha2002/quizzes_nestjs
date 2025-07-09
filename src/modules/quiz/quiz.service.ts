@@ -138,8 +138,24 @@ export class QuizService {
             ? 'Quiz has been frozen successfully'
             : 'Quiz has been unfrozen successfully',
         };
+    }
+
+    async findAllByLevelAndCategory(levelTitle: string, categoryTitle: string) 
+    {
+        const level = await this.levelService.findByTitleAndCategory(levelTitle, categoryTitle);
+        if (!level) {
+            throw new NotFoundException('Level not found or not published');
         }
 
+        const quizzes = await this.quizModel.findAll({
+            where: {
+                levelId: level.id,
+                isPublished: true,
+            },
+            order: [['createdAt', 'DESC']],
+        });
+        return quizzes;
+    }
 
     findById(id: number) {
         return this.quizModel.findByPk(id, {

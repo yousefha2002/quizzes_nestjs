@@ -130,4 +130,10 @@ export class CategoryService {
   findById(id: number) {
     return this.categoryModel.findByPk(id);
   }
+
+  async findByName(title: string) {
+    return this.categoryModel.findOne({
+      where: { title: title.trim().toLowerCase() },
+    });
+  }
 }

@@ -15,7 +15,8 @@ import { UpdateLevelDto } from './dto/update-level.dto';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
-import { LevelDto } from './dto/level.dto';
+import { LevelAdminDto } from './dto/level-admin.dto';
+import { LevelVisitorDto } from './dto/level-visitor.dto';
 
 @Controller('level')
 export class LevelController {
@@ -40,7 +41,7 @@ export class LevelController {
   }
 
   @UseGuards(AdminGuard)
-  @Serilaize(LevelDto)
+  @Serilaize(LevelAdminDto)
   @Get('admin/byCategory/:categoryId')
   getLevelsByCategoryForAdmin(
     @Query('status') status: number = PublishStatus.Published,
@@ -49,8 +50,14 @@ export class LevelController {
     return this.levelService.findAllForAdmin(+categoryId, status);
   }
 
+  @Serilaize(LevelVisitorDto)
+  @Get('all/byCategory/:name')
+  getLevelsByCategoryForVisitor(@Param('name') name: string) {
+    return this.levelService.findAllPublishedByCategoryName(name.toLowerCase());
+}
+
   @UseGuards(AdminGuard)
-  @Serilaize(LevelDto)
+  @Serilaize(LevelAdminDto)
   @Get('admin/:levelId')
   findOnelForAdmin(@Param('levelId') levelId: string) {
     return this.levelService.findLevel(+levelId);

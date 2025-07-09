@@ -65,6 +65,6 @@ export class CategoryController {
     @Query('limit') limit: string = '6',
     @Query('name') name?: string,
   ) {
-    return this.categoryService.getAllSummary(+page, +limit, 1,name);
+    return this.categoryService.getAllSummary(+page, +limit, 1,name?.toLowerCase());
   }
 }

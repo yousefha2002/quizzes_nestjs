@@ -13,6 +13,7 @@ import { Op } from 'sequelize';
 import { Quiz } from '../quiz/entities/quiz.entity';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Sequelize } from 'sequelize-typescript';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class LevelService {
@@ -100,9 +101,20 @@ export class LevelService {
     return this.levelModel.findByPk(id);
   }
 
+  async findAllPublishedByCategoryName(categoryName: string) {
+    const category = await this.categoryService.findByName(categoryName);
+    if (!category) throw new NotFoundException('Category not found');
+
+    return this.findAllBase(category.id, PublishStatus.Published);
+  }
+
   async findAllForAdmin(categoryId: number, status: PublishStatus) {
+    return this.findAllBase(categoryId, status);
+  }
+
+  async findAllBase(categoryId: number, status: PublishStatus) {
     const levels = await this.levelModel.findAll({
-      where: { categoryId },
+      where: { categoryId ,isPublished:status},
       attributes: {
         include: [
           [
@@ -126,6 +138,27 @@ export class LevelService {
     if (!level) {
       throw new NotFoundException('Level not found');
     }
+    return level;
+  }
+
+  async findByTitleAndCategory(levelTitle: string, categoryTitle: string) 
+  {
+    const level = await this.levelModel.findOne({
+      where: {
+        title: levelTitle.toLowerCase(),
+        isPublished: true
+      },
+      include: [
+        {
+          model:Category,
+          where: {
+            title: categoryTitle.toLowerCase(),
+            isPublished: true,
+          },
+          required: true,
+        },
+      ],
+    });
     return level;
   }
 }

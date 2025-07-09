@@ -1,6 +1,6 @@
 import { Expose } from 'class-transformer';
 
-export class LevelDto {
+export class LevelAdminDto {
   @Expose()
   id: string;
 
