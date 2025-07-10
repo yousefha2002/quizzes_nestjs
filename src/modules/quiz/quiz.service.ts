@@ -271,7 +271,10 @@ export class QuizService {
     }
 
     // جلب الأسئلة بشكل عشوائي مع الإجابات
-    const questions = await this.questionService.getRandomQuestionsForQuiz(quizId,quiz.numberOfQuestions)
+    const questions = await this.questionService.getRandomQuestionsForQuiz(
+      quizId,
+      quiz.numberOfQuestions,
+    );
     return {
       id: quiz.id,
       title: quiz.title,
@@ -307,6 +310,8 @@ export class QuizService {
       include: [
         {
           model: Question,
+          where: { deletedAt: null }, // ✅ Only include non-deleted questions
+          required: false,
           include: [{ model: Answer }],
         },
       ],
