@@ -78,4 +78,18 @@ export class QuizController {
   getQuizQuestions(@Param('quizTitle') id: number) {
     return this.quizService.getQuizQuestions(id);
   }
+
+  @UseGuards(AdminGuard)
+  @Serilaize(QuizDto)
+  @Get('admin/:quizId')
+  getQuizForAdmin(@Param('quizId') quizId: string) {
+    return this.quizService.findByIdForAdmin(+quizId);
+  }
+
+  @Serilaize(QuizDto)
+  @UseGuards(AdminGuard)
+  @Get('/admin/:quizId/details')
+  quizDetailsForAdmin(@Param('quizId') quizId: string) {
+    return this.quizService.getQuizDetailsForAdmin(+quizId);
+  }
 }
