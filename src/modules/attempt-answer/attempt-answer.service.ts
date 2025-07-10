@@ -19,4 +19,9 @@ export class AttemptAnswerService {
         }));
         await this.attemptAnswerModel.bulkCreate(attemptAnswers);
     }
+
+    async updateAttemptAnswer(attemptId: number, questionId: number, answerId: number) 
+    {
+        return await this.attemptAnswerModel.update({ answerId },{where: { attemptId, questionId }});
+    }
 }

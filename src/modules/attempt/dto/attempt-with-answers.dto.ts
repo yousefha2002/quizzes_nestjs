@@ -1,6 +1,6 @@
 import { Expose, Type } from 'class-transformer';
 
-class QuestionDto {
+class AnswerDto {
     @Expose()
     id: number;
 
@@ -8,12 +8,16 @@ class QuestionDto {
     title: string;
 }
 
-class AnswerDto {
+class QuestionDto {
     @Expose()
     id: number;
 
     @Expose()
     title: string;
+
+    @Expose()
+    @Type(() => AnswerDto)
+    answers: AnswerDto[];
 }
 
 export class AttemptAnswerItemDto {
