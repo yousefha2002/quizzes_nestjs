@@ -1,6 +1,6 @@
 import { AttemptAnswerService } from './../attempt-answer/attempt-answer.service';
 import { QuestionService } from './../question/question.service';
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { repositories } from 'src/common/enums/repositories';
 import { Attempt } from './entities/attempt.entity';
 import { QuizService } from '../quiz/quiz.service';
@@ -27,7 +27,7 @@ export class AttemptService {
             include: [
                 {
                 model: AttemptAnswer,
-                include: [{model:Question},{model:Answer}], 
+                include: [{model:Question,include:[{model:Answer}]},{model:Answer}], 
                 },
             ],
         });
@@ -42,9 +42,19 @@ export class AttemptService {
         include: [
             {
             model: AttemptAnswer,
-            include: ['question', 'answer'],
+            include: [{model:Question,include:[{model:Answer}]},{model:Answer}],
             },
         ],
         });
+    }
+
+    async updateAttemptAnswer(userId:number,attemptId: number, questionId: number, answerId: number)
+    {
+        const attempt = await this.attemptModel.findOne({where: { id: attemptId, userId, status: AttemptStatus.in_progress }});
+        if (!attempt) {
+            throw new NotFoundException('Attempt not found or not valid for update');
+        }
+        await this.attemptAnswerService.updateAttemptAnswer(attemptId, questionId, answerId);
+        return { message: 'Answer updated successfully' };
     }
 }
