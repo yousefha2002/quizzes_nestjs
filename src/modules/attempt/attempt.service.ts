@@ -13,7 +13,7 @@ import { Answer } from '../answer/entities/answer.entity';
 export class AttemptService {
     constructor(
         @Inject(repositories.attempt_repository)
-        private attemptModel: typeof Attempt, 
+        private attemptModel: typeof Attempt,  
         private quizService: QuizService,
         private questionService:QuestionService,
         private attemptAnswerService:AttemptAnswerService
