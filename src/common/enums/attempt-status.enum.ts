@@ -1,4 +1,4 @@
 export enum AttemptStatus {
-    FAILED = 'failed',
-    PASSED = 'passed',
+    submitted = 'submitted',
+    in_progress = 'in_progress',
 }

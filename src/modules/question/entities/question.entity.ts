@@ -8,6 +8,7 @@ import {
   HasMany,
 } from 'sequelize-typescript';
 import { Answer } from 'src/modules/answer/entities/answer.entity';
+import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';
 import { Quiz } from 'src/modules/quiz/entities/quiz.entity';
 
 @Table({ tableName: 'questions', timestamps: true, paranoid: true })
@@ -27,4 +28,7 @@ export class Question extends Model {
 
     @HasMany(() => Answer)
     answers: Answer[];
+
+    @HasMany(() => AttemptAnswer)
+    attemptAnswers: AttemptAnswer[];
 }

@@ -6,7 +6,7 @@ export enum repositories {
     quiz_repository = 'quiz_repository',
     question_repository = 'question_repository',
     answer_repository = 'answer_repository',
-    quiz_progress_repository = 'quiz_progress_repository',
+    attempt_answer_repository = 'attempt_answer_repository',
     attempt_repository = 'attempt_repository',
     certificate_repository = 'certificate_repository',
     points_repository = 'points_repository',

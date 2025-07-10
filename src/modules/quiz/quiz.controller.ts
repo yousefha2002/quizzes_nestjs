@@ -75,8 +75,8 @@ export class QuizController {
 
   @Get('questions/:quizTitle')
   @Serilaize(QuizQuestionsDto)
-  getQuizQuestions(@Param('quizTitle') quizTitle: string) {
-    return this.quizService.getQuizQuestions(quizTitle.toLowerCase());
+  getQuizQuestions(@Param('quizTitle') id: number) {
+    return this.quizService.getQuizQuestions(id);
   }
 
   @UseGuards(AdminGuard)

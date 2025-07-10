@@ -16,6 +16,9 @@ class LevelInfoDto {
 
 export class PublicQuizDto {
     @Expose()
+    id: number;
+
+    @Expose()
     title: string;
 
     @Expose()

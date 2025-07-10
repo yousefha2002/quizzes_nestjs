@@ -1,4 +1,5 @@
-import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
+import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';
 import { Question } from 'src/modules/question/entities/question.entity';
 
 @Table({ tableName: 'answers', timestamps: true })
@@ -19,4 +20,7 @@ export class Answer extends Model {
 
     @BelongsTo(() => Question)
     question: Question;
+
+    @HasMany(() => AttemptAnswer)
+    attemptAnswers: AttemptAnswer[];
 }

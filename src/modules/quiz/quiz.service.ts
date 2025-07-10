@@ -1,56 +1,76 @@
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Op, Sequelize } from 'sequelize';
+
 import { repositories } from 'src/common/enums/repositories';
+
 import { Quiz } from './entities/quiz.entity';
 import { LevelService } from '../level/level.service';
+import { QuestionService } from '../question/question.service';
+
 import { CreateQuizDto } from './dto/create-quiz.dto';
 import { UpdateQuizDto } from './dto/update-quiz.dto';
+
 import { Question } from '../question/entities/question.entity';
+import { Answer } from '../answer/entities/answer.entity';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
-import { Answer } from '../answer/entities/answer.entity';
-import { Sequelize } from 'sequelize';
 
 @Injectable()
 export class QuizService {
   constructor(
     @Inject(repositories.quiz_repository)
     private quizModel: typeof Quiz,
+
     private levelService: LevelService,
+
+    @Inject(forwardRef(() => QuestionService))
+    private questionService: QuestionService,
   ) {}
 
   async create(dto: CreateQuizDto) {
-    // Check if a quiz with the same title already exists
+    // تحقق من عدم وجود اختبار بنفس العنوان في نفس المستوى
     const existing = await this.quizModel.findOne({
-      where: { title: dto.title },
+      where: {
+        title: dto.title,
+        levelId: dto.levelId,
+      },
     });
+
     if (existing) {
-      throw new BadRequestException('Quiz title already exists');
+      throw new BadRequestException(
+        'Quiz title already exists in the same level',
+      );
     }
 
-    // Make sure the level exists
+    // تحقق من وجود المستوى
     const level = await this.levelService.findById(dto.levelId);
-    if (!level) throw new BadRequestException('Level not found');
+    if (!level) {
+      throw new BadRequestException('Level not found');
+    }
 
-    // Create the quiz
+    // إنشاء الاختبار
     await this.quizModel.create({ ...dto });
     return { message: 'Quiz created successfully' };
   }
 
   async update(id: number, dto: UpdateQuizDto) {
-    // Check if the quiz exists
+    // تحقق من وجود الاختبار
     const quiz = await this.findById(id);
-    if (!quiz) throw new NotFoundException('Quiz not found');
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
-    // Determine if quiz is locked (already published or has attempts)
+    // هل الاختبار منشور أو له محاولات؟
     const hasAttempts = quiz.attempts && quiz.attempts.length > 0;
     const isLocked = quiz.isPublished || hasAttempts;
 
-    // If locked, structure-related fields cannot be updated
+    // منع تعديل بنية الاختبار إذا كان مقفلًا
     if (isLocked) {
       if (
         dto.numberOfQuestions !== undefined ||
@@ -58,54 +78,61 @@ export class QuizService {
         dto.levelId !== undefined
       ) {
         throw new BadRequestException(
-          'Cannot modify quiz structure after publishing or receiving attempts.',
+          'Cannot modify quiz structure after publishing or attempts',
         );
       }
     }
 
-    // Check and update title
-    if (dto.title !== undefined) {
+    // تحديث العنوان مع التحقق من عدم التكرار في نفس المستوى
+    if (dto.title !== undefined && dto.title !== quiz.title) {
+      const levelIdToCheck = dto.levelId ?? quiz.levelId;
       const existing = await this.quizModel.findOne({
-        where: { title: dto.title },
+        where: {
+          title: dto.title,
+          levelId: levelIdToCheck,
+          id: { [Op.ne]: id },
+        },
       });
 
-      // Make sure no other quiz has the same title
-      if (existing && existing.id !== quiz.id) {
+      if (existing) {
         throw new BadRequestException(
-          'Another quiz with this title already exists',
+          'Another quiz with this title already exists in the same level',
         );
       }
-
       quiz.title = dto.title;
     }
 
-    // Update headline if provided
+    // تحديث العنوان الفرعي
     if (dto.headline !== undefined) {
       quiz.headline = dto.headline;
     }
 
-    // If not locked, update structure-related fields
+    // تحديث بنية الاختبار إذا لم يكن مقفلًا
     if (!isLocked) {
       if (dto.numberOfQuestions !== undefined) {
         quiz.numberOfQuestions = dto.numberOfQuestions;
       }
+
       if (dto.passScore !== undefined) {
         quiz.passScore = dto.passScore;
       }
+
       if (dto.levelId !== undefined) {
         const level = await this.levelService.findById(dto.levelId);
-        if (!level) throw new BadRequestException('Level not found');
+        if (!level) {
+          throw new BadRequestException('Level not found');
+        }
         quiz.levelId = dto.levelId;
       }
     }
 
-    // Save changes
     await quiz.save();
 
     return { message: 'Quiz updated successfully' };
   }
 
   async publish(id: number) {
+    // جلب الاختبار مع الأسئلة المنشورة وغير المحذوفة
     const quiz = await this.quizModel.findByPk(id, {
       include: [
         {
@@ -115,31 +142,39 @@ export class QuizService {
         },
       ],
     });
+
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
+
     if (quiz.isPublished) {
       throw new BadRequestException('Quiz is already published');
     }
+
     if (!quiz.questions || quiz.questions.length < quiz.numberOfQuestions) {
       throw new BadRequestException(
         `Quiz must have at least ${quiz.numberOfQuestions} questions to be published`,
       );
     }
+
     quiz.isPublished = true;
     await quiz.save();
+
     return { message: 'Quiz published successfully' };
   }
 
   async findAllByLevelAndCategory(levelTitle: string, categoryTitle: string) {
+    // جلب المستوى بناءً على العنوان والفئة
     const level = await this.levelService.findByTitleAndCategory(
       levelTitle,
       categoryTitle,
     );
+
     if (!level) {
       throw new NotFoundException('Level not found or not published');
     }
 
+    // جلب جميع الاختبارات المنشورة التابعة للمستوى
     const quizzes = await this.quizModel.findAll({
       where: {
         levelId: level.id,
@@ -147,6 +182,7 @@ export class QuizService {
       },
       order: [['createdAt', 'DESC']],
     });
+
     return quizzes;
   }
 
@@ -159,7 +195,10 @@ export class QuizService {
       levelTitle,
       categoryTitle,
     );
-    if (!level) throw new NotFoundException('Level not found');
+    if (!level) {
+      throw new NotFoundException('Level not found');
+    }
+
     const quiz = await this.quizModel.findOne({
       where: {
         title: quizTitle.toLowerCase(),
@@ -173,7 +212,11 @@ export class QuizService {
         },
       ],
     });
-    if (!quiz) throw new NotFoundException('Quiz not found');
+
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+
     return quiz;
   }
 
@@ -189,12 +232,14 @@ export class QuizService {
       },
       order: [['createdAt', 'DESC']],
     });
+
     return quizzes;
   }
 
-  async getQuizQuestions(quizTitle: string) {
+  async getQuizQuestions(quizId: number) {
+    // جلب الاختبار مع المستوى والفئة
     const quiz = await this.quizModel.findOne({
-      where: { title: quizTitle, isPublished: true },
+      where: { id: quizId, isPublished: true },
       include: [
         {
           model: Level,
@@ -203,11 +248,15 @@ export class QuizService {
       ],
     });
 
-    if (!quiz) throw new NotFoundException('Quiz not found');
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
 
-    if (!quiz.level?.isPublished || !quiz.level.category?.isPublished)
+    if (!quiz.level?.isPublished || !quiz.level.category?.isPublished) {
       throw new BadRequestException('Level or Category is not published');
+    }
 
+    // حساب عدد الأسئلة المنشورة وغير المحذوفة
     const totalQuestions = await Question.count({
       where: {
         quizId: quiz.id,
@@ -221,16 +270,8 @@ export class QuizService {
       );
     }
 
-    const questions = await Question.findAll({
-      where: {
-        quizId: quiz.id,
-        deletedAt: null,
-      },
-      include: [Answer],
-      order: [Sequelize.literal('RAND()')],
-      limit: quiz.numberOfQuestions,
-    });
-
+    // جلب الأسئلة بشكل عشوائي مع الإجابات
+    const questions = await this.questionService.getRandomQuestionsForQuiz(quizId,quiz.numberOfQuestions)
     return {
       id: quiz.id,
       title: quiz.title,
@@ -240,8 +281,16 @@ export class QuizService {
 
   findById(id: number) {
     return this.quizModel.findByPk(id, {
-      include: ['attempts'],
+      include: ['attempts'], // جلب محاولات الاختبار مع النموذج
     });
+  }
+
+  async checkIfExist(id: number) {
+    const quiz = await this.quizModel.findByPk(id);
+    if (!quiz) {
+      throw new NotFoundException('Quiz not found');
+    }
+    return quiz;
   }
 
   async findByIdForAdmin(quizId: number) {
