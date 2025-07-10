@@ -8,11 +8,11 @@ import { LevelModule } from './modules/level/level.module';
 import { QuizModule } from './modules/quiz/quiz.module';
 import { QuestionModule } from './modules/question/question.module';
 import { AnswerModule } from './modules/answer/answer.module';
-import { QuizProgressModule } from './modules/quiz-progress/quiz-progress.module';
 import { AttemptModule } from './modules/attempt/attempt.module';
 import { CertificateModule } from './modules/certificate/certificate.module';
 import { PointsModule } from './modules/points/points.module';
 import { LevelProgressModule } from './modules/level-progress/level-progress.module';
+import { AttemptAnswerModule } from './modules/attempt-answer/attempt-answer.module';
 
 @Module({
     imports: [
@@ -25,11 +25,11 @@ import { LevelProgressModule } from './modules/level-progress/level-progress.mod
         QuizModule,
         QuestionModule,
         AnswerModule,
-        QuizProgressModule,
         AttemptModule,
         CertificateModule,
         PointsModule,
         LevelProgressModule,
+        AttemptAnswerModule,
     ]
 })
 export class AppModule {}

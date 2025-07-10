@@ -1,4 +1,5 @@
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { QuestionService } from './../question/question.service';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { repositories } from 'src/common/enums/repositories';
 import { Quiz } from './entities/quiz.entity';
 import { LevelService } from '../level/level.service';
@@ -7,8 +8,7 @@ import { UpdateQuizDto } from './dto/update-quiz.dto';
 import { Question } from '../question/entities/question.entity';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
-import { Answer } from '../answer/entities/answer.entity';
-import { Sequelize } from 'sequelize';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class QuizService {
@@ -16,13 +16,20 @@ export class QuizService {
         @Inject(repositories.quiz_repository)
         private quizModel: typeof Quiz, 
         private levelService: LevelService,
+
+        @Inject(forwardRef(() => QuestionService))
+        private questionService:QuestionService
     ) {}
 
     async create(dto: CreateQuizDto) {
         // Check if a quiz with the same title already exists
         const existing = await this.quizModel.findOne({
-            where: { title: dto.title },
+            where: {
+                title: dto.title,
+                levelId: dto.levelId,
+            },
         });
+
         if (existing) {
             throw new BadRequestException('Quiz title already exists');
         }
@@ -36,16 +43,14 @@ export class QuizService {
         return { message: 'Quiz created successfully' };
     }
 
-    async update(id: number, dto: UpdateQuizDto) {
-        // Check if the quiz exists
+    async update(id: number, dto: UpdateQuizDto) 
+    {
         const quiz = await this.findById(id);
         if (!quiz) throw new NotFoundException('Quiz not found');
 
-        // Determine if quiz is locked (already published or has attempts)
         const hasAttempts = quiz.attempts && quiz.attempts.length > 0;
         const isLocked = quiz.isPublished || hasAttempts;
 
-        // If locked, structure-related fields cannot be updated
         if (isLocked) {
             if (
                 dto.numberOfQuestions !== undefined ||
@@ -58,43 +63,46 @@ export class QuizService {
             }
         }
 
-        // Check and update title
-        if (dto.title !== undefined) {
+        if (dto.title !== undefined && dto.title !== quiz.title) {
+            const levelIdToCheck = dto.levelId ?? quiz.levelId;
+
             const existing = await this.quizModel.findOne({
-                where: { title: dto.title },
+                where: {
+                    title: dto.title,
+                    levelId: levelIdToCheck,
+                    id: { [Op.ne]: id },
+                },
             });
 
-            // Make sure no other quiz has the same title
-            if (existing && existing.id !== quiz.id) {
-                throw new BadRequestException('Another quiz with this title already exists');
+            if (existing) {
+                throw new BadRequestException(
+                    'Another quiz with this title already exists in the same level.',
+                );
             }
 
             quiz.title = dto.title;
         }
 
-        // Update headline if provided
         if (dto.headline !== undefined) {
             quiz.headline = dto.headline;
         }
 
-        // If not locked, update structure-related fields
         if (!isLocked) {
             if (dto.numberOfQuestions !== undefined) {
                 quiz.numberOfQuestions = dto.numberOfQuestions;
             }
+
             if (dto.passScore !== undefined) {
                 quiz.passScore = dto.passScore;
             }
+
             if (dto.levelId !== undefined) {
                 const level = await this.levelService.findById(dto.levelId);
                 if (!level) throw new BadRequestException('Level not found');
                 quiz.levelId = dto.levelId;
             }
         }
-
-        // Save changes
         await quiz.save();
-
         return { message: 'Quiz updated successfully' };
     }
 
@@ -179,10 +187,10 @@ export class QuizService {
         return quizzes;
     }
 
-    async getQuizQuestions(quizTitle: string) 
+    async getQuizQuestions(id: number) 
     {
         const quiz = await this.quizModel.findOne({
-            where: { title: quizTitle, isPublished: true },
+            where: {id, isPublished: true },
             include: [
             {
                 model: Level,
@@ -209,15 +217,7 @@ export class QuizService {
             );
         }
 
-        const questions = await Question.findAll({
-            where: {
-            quizId: quiz.id,
-            deletedAt: null,
-            },
-            include: [Answer],
-            order: [Sequelize.literal('RAND()')],
-            limit: quiz.numberOfQuestions,
-        });
+        const questions = await this.questionService.getRandomQuestionsForQuiz(quiz.id, quiz.numberOfQuestions);
 
         return {
             id: quiz.id,
@@ -226,10 +226,19 @@ export class QuizService {
         };
 }
 
-
     findById(id: number) {
         return this.quizModel.findByPk(id, {
             include: ['attempts'],
         });
+    }
+
+    async checkIfExist(id:number)
+    {
+        const quiz = await this.quizModel.findByPk(id)
+        if(!quiz)
+        {
+            throw new NotFoundException('Quiz not found')
+        }
+        return quiz
     }
 }

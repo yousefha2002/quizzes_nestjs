@@ -4,13 +4,13 @@ import { Sequelize } from 'sequelize-typescript';
 import { Admin } from '../modules/admin/entities/admin.entity';
 import { Answer } from 'src/modules/answer/entities/answer.entity';
 import { Quiz } from 'src/modules/quiz/entities/quiz.entity';
-import { QuizProgress } from 'src/modules/quiz-progress/entities/quiz-progress.entity';
 import { LevelProgress } from 'src/modules/level-progress/entities/level-progress.entity';
 import { Attempt } from 'src/modules/attempt/entities/attempt.entity';
 import { Certificate } from 'src/modules/certificate/entities/certificate.entity';
 import { Question } from 'src/modules/question/entities/question.entity';
 import { Points } from 'src/modules/points/entities/points.entity';
 import { Category } from 'src/modules/category/entities/category.entity';
+import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';
 
 export const databaseProviders = [
   {
@@ -31,13 +31,13 @@ export const databaseProviders = [
         Level,
         Answer,
         Quiz,
-        QuizProgress,
         LevelProgress,
         Attempt,
         Certificate,
         Question,
         Points,
         Category,
+        AttemptAnswer
       ]);
       await sequelize.sync({ alter: false });
       return sequelize;

@@ -2,14 +2,13 @@ import {Table,Column,Model,DataType,ForeignKey,BelongsTo,HasMany} from 'sequeliz
 import { Attempt } from 'src/modules/attempt/entities/attempt.entity';
 import { Level } from 'src/modules/level/entities/level.entity';
 import { Question } from 'src/modules/question/entities/question.entity';
-import { QuizProgress } from 'src/modules/quiz-progress/entities/quiz-progress.entity';
 
 @Table({ tableName: 'quizzes', timestamps: true })
 export class Quiz extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;
 
-    @Column({ type: DataType.STRING, allowNull: false,unique:true })
+    @Column({ type: DataType.STRING, allowNull: false})
     title: string;
 
     @Column({ type: DataType.STRING })
@@ -33,9 +32,6 @@ export class Quiz extends Model {
 
     @HasMany(() => Question)
     questions: Question[];
-
-    @HasMany(() => QuizProgress)
-    quizProgresses: QuizProgress[];
 
     @HasMany(() => Attempt)
     attempts: Attempt[];

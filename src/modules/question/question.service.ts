@@ -1,18 +1,22 @@
 import { QuizService } from './../quiz/quiz.service';
-import { BadRequestException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { CreateQuestionsForQuizDto } from './dto/create-question.dto';
 import { AnswerService } from '../answer/answer.service';
 import { repositories } from 'src/common/enums/repositories';
 import { Question } from './entities/question.entity';
 import { UpdateQuestionDto } from './dto/update-question.dto';
+import { Answer } from '../answer/entities/answer.entity';
+import { Sequelize } from 'sequelize';
 
 @Injectable()
 export class QuestionService {
     constructor(
         @Inject(repositories.question_repository)
         private questionModel: typeof Question,
-        private quizService: QuizService,
         private readonly answerService: AnswerService,
+
+        @Inject(forwardRef(() => QuizService))
+        private quizService:QuizService
     ) {}
 
     async createMany(dto: CreateQuestionsForQuizDto) 
@@ -82,6 +86,19 @@ export class QuestionService {
             await this.answerService.createMany(question.id, dto.answers);
         }
         return { message: 'Question updated successfully' };
+    }
+
+    async getRandomQuestionsForQuiz(quizId: number, limit: number) 
+    {
+        return await this.questionModel.findAll({
+            where: {
+                quizId,
+                deletedAt: null,
+            },
+            include: [{model:Answer}],
+            order: [Sequelize.literal('RAND()')],
+            limit,
+        });
     }
 
     async softDelete(id: number) {
