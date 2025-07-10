@@ -1,5 +1,20 @@
 import { Expose, Type } from 'class-transformer';
-import { AnswerDto, QuestionDto } from 'src/modules/quiz/quiz-questions.dto';
+
+class QuestionDto {
+    @Expose()
+    id: number;
+
+    @Expose()
+    title: string;
+}
+
+class AnswerDto {
+    @Expose()
+    id: number;
+
+    @Expose()
+    title: string;
+}
 
 export class AttemptAnswerItemDto {
     @Expose()
