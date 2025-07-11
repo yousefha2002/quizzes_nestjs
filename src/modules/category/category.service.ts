@@ -31,7 +31,7 @@ export class CategoryService {
   }
 
   async update(id: number, dto: UpdateCategoryDto) {
-    const category = await this.findAndCheck(id)
+    const category = await this.findAndCheck(id);
     const existing = await this.categoryModel.findOne({
       where: { title: dto.title },
     });
@@ -68,11 +68,20 @@ export class CategoryService {
     return { message: 'Category published successfully' };
   }
 
-  async getAllForAdmin(page: number, limit: number, status: number) {
+  async getAllForAdmin(
+    page: number,
+    limit: number,
+    status: number,
+    search: string,
+  ) {
     const offset = (page - 1) * limit;
     const whereClause: any = {
       isPublished: status,
     };
+    console.log({ search });
+    if (search) {
+      whereClause.title = { [Op.like]: `%${search}%` };
+    }
     const { rows, count } = await this.categoryModel.findAndCountAll({
       where: whereClause,
       attributes: {
@@ -106,8 +115,12 @@ export class CategoryService {
     return category;
   }
 
-  async getAllSummary(page: number, limit: number, status: number, name?: string) 
-  {
+  async getAllSummary(
+    page: number,
+    limit: number,
+    status: number,
+    name?: string,
+  ) {
     const offset = (page - 1) * limit;
     const whereClause: any = {
       isPublished: status,
@@ -119,7 +132,7 @@ export class CategoryService {
       where: whereClause,
       limit,
       offset,
-      order: [['createdAt', 'DESC']], 
+      order: [['createdAt', 'DESC']],
     });
     return {
       categories: rows,
