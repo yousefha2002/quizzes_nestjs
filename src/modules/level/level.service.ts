@@ -89,7 +89,7 @@ export class LevelService {
 
     if (!level.quizzes || level.quizzes.length === 0) {
       throw new BadRequestException(
-        'Cannot publish level without at least one published and unfrozen quiz',
+        'Cannot publish level without at least one published quiz',
       );
     }
     level.isPublished = true;
