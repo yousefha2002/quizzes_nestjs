@@ -47,8 +47,9 @@ export class CategoryController {
     @Query('page') page: string = '1',
     @Query('limit') limit: string = '5',
     @Query('status') status: number = PublishStatus.Published,
+    @Query('search') search: string = '',
   ) {
-    return this.categoryService.getAllForAdmin(+page, +limit, status);
+    return this.categoryService.getAllForAdmin(+page, +limit, status, search);
   }
 
   @UseGuards(AdminGuard)
@@ -65,6 +66,11 @@ export class CategoryController {
     @Query('limit') limit: string = '6',
     @Query('name') name?: string,
   ) {
-    return this.categoryService.getAllSummary(+page, +limit, 1,name?.toLowerCase());
+    return this.categoryService.getAllSummary(
+      +page,
+      +limit,
+      1,
+      name?.toLowerCase(),
+    );
   }
 }

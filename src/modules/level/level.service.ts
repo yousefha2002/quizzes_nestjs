@@ -79,7 +79,7 @@ export class LevelService {
       include: [
         {
           model: Quiz,
-          where: { isPublished: true, isFrozen: false },
+          where: { isPublished: true },
           required: false,
         },
       ],
@@ -90,7 +90,7 @@ export class LevelService {
 
     if (!level.quizzes || level.quizzes.length === 0) {
       throw new BadRequestException(
-        'Cannot publish level without at least one published and unfrozen quiz',
+        'Cannot publish level without at least one published quiz',
       );
     }
     level.isPublished = true;
@@ -115,7 +115,7 @@ export class LevelService {
 
   async findAllBase(categoryId: number, status: PublishStatus) {
     const levels = await this.levelModel.findAll({
-      where: { categoryId ,isPublished:status},
+      where: { categoryId, isPublished: status },
       attributes: {
         include: [
           [
@@ -142,16 +142,15 @@ export class LevelService {
     return level;
   }
 
-  async findByTitleAndCategory(levelTitle: string, categoryTitle: string) 
-  {
+  async findByTitleAndCategory(levelTitle: string, categoryTitle: string) {
     const level = await this.levelModel.findOne({
       where: {
         title: levelTitle.toLowerCase(),
-        isPublished: true
+        isPublished: true,
       },
       include: [
         {
-          model:Category,
+          model: Category,
           where: {
             title: categoryTitle.toLowerCase(),
             isPublished: true,
