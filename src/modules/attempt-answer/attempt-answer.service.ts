@@ -24,4 +24,9 @@ export class AttemptAnswerService {
     {
         return await this.attemptAnswerModel.update({ answerId },{where: { attemptId, questionId }});
     }
+
+    async deleteAllAttemptAnswers(attemptId: number) 
+    {
+        await this.attemptAnswerModel.destroy({ where: { attemptId } });
+    }
 }

@@ -284,12 +284,12 @@ export class QuizService {
 
   findById(id: number) {
     return this.quizModel.findByPk(id, {
-      include: ['attempts'], // جلب محاولات الاختبار مع النموذج
+      include: ['attempts'], 
     });
   }
 
   async checkIfExist(id: number) {
-    const quiz = await this.quizModel.findByPk(id);
+    const quiz = await this.quizModel.findOne({where:{id,isPublished:true}});
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
