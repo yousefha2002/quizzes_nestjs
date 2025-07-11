@@ -24,6 +24,9 @@ export class Attempt extends Model {
     @Column({type: DataType.ENUM(...Object.values(AttemptStatus)),allowNull: false})
     status:AttemptStatus ;
 
+    @Column(DataType.DATE)
+    submittedAt: Date;
+
     @BelongsTo(() => User)
     user: User;
 
