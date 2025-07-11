@@ -39,7 +39,7 @@ export const databaseProviders = [
         Category,
         AttemptAnswer,
       ]);
-      await sequelize.sync({ alter: true });
+      await sequelize.sync({ alter: false });
       return sequelize;
     },
   },

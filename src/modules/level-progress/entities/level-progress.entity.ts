@@ -18,16 +18,7 @@ export class LevelProgress extends Model {
     levelId: number;
 
     @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
-    passedQuizCount: number;
-
-    @Column({ type: DataType.INTEGER, allowNull: false, defaultValue: 0 })
-    totalPublishedQuiz: number;
-
-    @Column({ type: DataType.FLOAT, allowNull: false, defaultValue: 0 })
-    percentage: number;
-
-    @Column({ type: DataType.DATE, allowNull: false })
-    lastUpdate: Date;
+    completedQuizzes: number;
 
     @BelongsTo(() => User)
     user: User;

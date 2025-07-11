@@ -17,6 +17,10 @@ import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { LevelAdminDto } from './dto/level-admin.dto';
 import { LevelVisitorDto } from './dto/level-visitor.dto';
+import { LevelWithProgressDto } from './dto/level-with-progress.dto';
+import { CurrentUser } from 'src/decorators/currentUser.decorator';
+import { User } from '../user/entities/user.entity';
+import { UserGuard } from 'src/common/guards/user.guard';
 
 @Controller('level')
 export class LevelController {
@@ -51,7 +55,7 @@ export class LevelController {
   }
 
   @Serilaize(LevelVisitorDto)
-  @Get('all/byCategory/:name')
+  @Get('all/public/byCategory/:name')
   getLevelsByCategoryForVisitor(@Param('name') name: string) {
     return this.levelService.findAllPublishedByCategoryName(name.toLowerCase());
 }
@@ -61,5 +65,12 @@ export class LevelController {
   @Get('admin/:levelId')
   findOnelForAdmin(@Param('levelId') levelId: string) {
     return this.levelService.findLevel(+levelId);
+  }
+
+  @UseGuards(UserGuard)
+  @Serilaize(LevelWithProgressDto)
+  @Get('all/byCategory/:name')
+  getLevelsWithProgressByCategory(@Param('name') category: string,@CurrentUser() user:User) {
+    return this.levelService.getLevelsWithProgressByCategory(+user.id,category);
   }
 }

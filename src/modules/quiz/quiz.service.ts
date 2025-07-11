@@ -60,17 +60,14 @@ export class QuizService {
   }
 
   async update(id: number, dto: UpdateQuizDto) {
-    // تحقق من وجود الاختبار
     const quiz = await this.findById(id);
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
 
-    // هل الاختبار منشور أو له محاولات؟
     const hasAttempts = quiz.attempts && quiz.attempts.length > 0;
     const isLocked = quiz.isPublished || hasAttempts;
 
-    // منع تعديل بنية الاختبار إذا كان مقفلًا
     if (isLocked) {
       if (
         dto.numberOfQuestions !== undefined ||
@@ -83,7 +80,6 @@ export class QuizService {
       }
     }
 
-    // تحديث العنوان مع التحقق من عدم التكرار في نفس المستوى
     if (dto.title !== undefined && dto.title !== quiz.title) {
       const levelIdToCheck = dto.levelId ?? quiz.levelId;
       const existing = await this.quizModel.findOne({
@@ -102,12 +98,10 @@ export class QuizService {
       quiz.title = dto.title;
     }
 
-    // تحديث العنوان الفرعي
     if (dto.headline !== undefined) {
       quiz.headline = dto.headline;
     }
 
-    // تحديث بنية الاختبار إذا لم يكن مقفلًا
     if (!isLocked) {
       if (dto.numberOfQuestions !== undefined) {
         quiz.numberOfQuestions = dto.numberOfQuestions;
@@ -237,7 +231,6 @@ export class QuizService {
   }
 
   async getQuizQuestions(quizId: number) {
-    // جلب الاختبار مع المستوى والفئة
     const quiz = await this.quizModel.findOne({
       where: { id: quizId, isPublished: true },
       include: [

@@ -14,6 +14,7 @@ import { Quiz } from '../quiz/entities/quiz.entity';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Sequelize } from 'sequelize-typescript';
 import { Category } from '../category/entities/category.entity';
+import { LevelProgress } from '../level-progress/entities/level-progress.entity';
 
 @Injectable()
 export class LevelService {
@@ -160,5 +161,32 @@ export class LevelService {
       ],
     });
     return level;
+  }
+
+  async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) {
+    const levels = await this.levelModel.findAll({
+      include: [
+        {
+          model: Category,
+          where: { title: categoryTitle },
+        },
+        {
+          model: Quiz,
+        },
+        {
+          model: LevelProgress,
+          where: { userId },
+          attributes: ['completedQuizzes'],
+        },
+      ],
+      attributes: ['id', 'title'],
+    });
+
+    return levels.map(level => ({
+      id: level.id,
+      title: level.title,
+      totalQuizzes: level.quizzes.length,
+      completedQuizzes: level.levelProgresses[0]?.completedQuizzes || 0,
+    }));
   }
 }

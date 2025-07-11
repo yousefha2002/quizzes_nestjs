@@ -23,9 +23,6 @@ export class Level extends Model {
     @Column({ type: DataType.BOOLEAN, allowNull: false,defaultValue:false })
     isPublished: boolean;
 
-    @Column({ type: DataType.DATE, allowNull: false })
-    lastUpdate: Date;
-
     @HasMany(() => Quiz)
     quizzes: Quiz[];
 

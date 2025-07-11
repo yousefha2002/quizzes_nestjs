@@ -1,6 +1,6 @@
 import { AttemptAnswerService } from './../attempt-answer/attempt-answer.service';
 import { QuestionService } from './../question/question.service';
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { repositories } from 'src/common/enums/repositories';
 import { Attempt } from './entities/attempt.entity';
 import { QuizService } from '../quiz/quiz.service';
@@ -9,6 +9,8 @@ import { AttemptAnswer } from '../attempt-answer/entities/attempt-answer.entity'
 import { Question } from '../question/entities/question.entity';
 import { Answer } from '../answer/entities/answer.entity';
 import { Quiz } from '../quiz/entities/quiz.entity';
+import { LevelProgressService } from '../level-progress/level-progress.service';
+import { Op, Sequelize } from 'sequelize';
 
 @Injectable()
 export class AttemptService {
@@ -17,7 +19,10 @@ export class AttemptService {
         private attemptModel: typeof Attempt,  
         private quizService: QuizService,
         private questionService:QuestionService,
-        private attemptAnswerService:AttemptAnswerService
+        private attemptAnswerService:AttemptAnswerService,
+
+        @Inject(forwardRef(() => LevelProgressService))
+        private levelProgressService:LevelProgressService
     ) {}
 
     async startAttempt(userId: number, quizId: number) 
@@ -88,10 +93,17 @@ export class AttemptService {
         }
 
         attempt.score = score;
-        attempt.status = AttemptStatus.submitted;
+        const quiz = await this.quizService.checkIfExist(attempt.quizId);
+        const percentage = (score / quiz.numberOfQuestions) * 100;
+
+        attempt.status = percentage >= quiz.passScore ? AttemptStatus.passed : AttemptStatus.failed;
         attempt.submittedAt = new Date(); 
         await attempt.save();
         await this.attemptAnswerService.deleteAllAttemptAnswers(attemptId);
+
+        if (percentage >= quiz.passScore) {
+            await this.levelProgressService.updateLevelProgress(userId, quiz.levelId);
+        }
 
         return {
             message: 'Attempt submitted successfully',
@@ -104,7 +116,7 @@ export class AttemptService {
             where: {
             id: attemptId,
             userId,
-            status: AttemptStatus.submitted,
+                status: [AttemptStatus.failed, AttemptStatus.passed],
             },
             include: [
             {
@@ -120,4 +132,25 @@ export class AttemptService {
         return attempt;
     }
 
+    async findCompletedQuizzesForLevel(userId: number, levelId: number) {
+        const completedAttempts = await this.attemptModel.findAll({
+            where: {
+                userId,
+                status: AttemptStatus.passed, 
+            },
+            include: [
+                {
+                    model: Quiz,
+                    where: {
+                        levelId,
+                    },
+                    attributes: [],
+                },
+            ],
+            attributes: ['quizId'],
+            group: ['quizId'],
+            raw: true,
+        });
+        return completedAttempts;
+    }
 }
