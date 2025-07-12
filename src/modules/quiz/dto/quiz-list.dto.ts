@@ -10,3 +10,8 @@ export class QuizListDto {
     @Expose()
     numberOfQuestions: number;
 }
+
+export class QuizListLoggedInDto extends QuizListDto{
+    @Expose()
+    userStatus:string
+} 

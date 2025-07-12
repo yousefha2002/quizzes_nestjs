@@ -167,7 +167,7 @@ export class LevelService {
       include: [
         {
           model: Category,
-          where: { title: categoryTitle },
+          where: { title: categoryTitle, isPublished: true, },
         },
         {
           model: Quiz,
@@ -184,7 +184,7 @@ export class LevelService {
     return levels.map(level => ({
       id: level.id,
       title: level.title,
-      totalQuizzes: level.quizzes.length,
+      quizCount: level.quizzes.length,
       completedQuizzes: level.levelProgresses[0]?.completedQuizzes || 0,
     }));
   }

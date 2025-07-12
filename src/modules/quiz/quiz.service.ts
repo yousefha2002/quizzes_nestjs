@@ -20,6 +20,8 @@ import { Question } from '../question/entities/question.entity';
 import { Answer } from '../answer/entities/answer.entity';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
+import { Attempt } from '../attempt/entities/attempt.entity';
+import { AttemptStatus } from 'src/common/enums/attempt-status.enum';
 
 @Injectable()
 export class QuizService {
@@ -313,5 +315,46 @@ export class QuizService {
       throw new BadRequestException('Quiz not found');
     }
     return quiz;
+  }
+
+  async getQuizzesWithUserStatus(level: string,category:string, userId: number) {
+    const quizzes = await this.quizModel.findAll({
+      where: {
+        isPublished: true,
+      },
+      include: [
+        {
+          model: Level,
+          required: true,
+          where: { isPublished: true,title:level },
+          include: [
+            {
+              model: Category,
+              required: true,
+              where: { isPublished: true,title:category },
+            },
+          ],
+        },
+        {
+          model:Attempt,
+            where: {
+              userId,
+              status: { [Op.in]: [AttemptStatus.passed, AttemptStatus.failed] }, 
+          },
+          required: false,
+        },
+      ],
+    })
+
+    return quizzes.map((quiz) => {
+      const attempts = quiz.attempts || [];
+      const hasPassed = attempts.some(a => a.status === AttemptStatus.passed);
+      return {
+        id: quiz.id,
+        title: quiz.title,
+        numberOfQuestions: quiz.numberOfQuestions,
+        ...(attempts.length > 0 &&{userStatus: hasPassed ? AttemptStatus.passed : AttemptStatus.failed,})
+      };
+    });
   }
 }

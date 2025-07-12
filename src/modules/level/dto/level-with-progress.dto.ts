@@ -8,7 +8,7 @@ export class LevelWithProgressDto {
     title: string;
 
     @Expose()
-    totalQuizzes: number;
+    quizCount: number;
 
     @Expose()
     completedQuizzes: number;

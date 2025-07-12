@@ -10,7 +10,9 @@ import { Question } from '../question/entities/question.entity';
 import { Answer } from '../answer/entities/answer.entity';
 import { Quiz } from '../quiz/entities/quiz.entity';
 import { LevelProgressService } from '../level-progress/level-progress.service';
-import { Op, Sequelize } from 'sequelize';
+import { literal, Op } from 'sequelize';
+import { Level } from '../level/entities/level.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class AttemptService {
@@ -152,5 +154,93 @@ export class AttemptService {
             raw: true,
         });
         return completedAttempts;
+    }
+
+    async getUserQuizzes(userId: number, page = 1, limit = 1) {
+        const offset = (page - 1) * limit;
+
+        const attempts = await this.attemptModel.findAll({
+            where: {
+            userId,
+            status: { [Op.in]: [AttemptStatus.passed, AttemptStatus.failed] },
+            },
+            include: [
+            {
+                model: Quiz,
+                attributes: ['id', 'title', 'levelId'],
+                include: [
+                {
+                    model: Level,
+                    attributes: ['title'],
+                    include: [
+                    {
+                        model: Category,
+                        attributes: ['title'],
+                    },
+                    ],
+                },
+                ],
+            },
+            ],
+            order: [['score', 'DESC']],
+            raw: true,
+            nest: true,
+        });
+
+        const summaryMap = new Map<
+            number,
+            {
+            quiz: { id: number; title: string };
+            levelTitle: string;
+            categoryTitle: string;
+            status: AttemptStatus.failed | AttemptStatus.passed;
+            }
+        >();
+
+        for (const attempt of attempts) {
+            const quizId = attempt.quiz.id;
+            if (!summaryMap.has(quizId)) {
+            summaryMap.set(quizId, {
+                quiz: { id: attempt.quiz.id, title: attempt.quiz.title },
+                levelTitle: attempt.quiz.level.title,
+                categoryTitle: attempt.quiz.level.category.title,
+                status: attempt.status === AttemptStatus.passed ? AttemptStatus.passed : AttemptStatus.failed,
+            });
+            }
+        }
+
+        const allSummaries = Array.from(summaryMap.values());
+        const paginated = allSummaries.slice(offset, offset + limit);
+        return {
+            quizzes: paginated,
+            totalPages: Math.ceil(allSummaries.length / limit),
+        };
+    }
+
+    async getInProgressQuizzes(userId: number) 
+    {
+        return this.attemptModel.findAll({
+            where: {
+                userId,
+                status: AttemptStatus.in_progress,
+            },
+            include: [
+            {
+                model: Quiz,
+                include: [
+                {
+                    model: Level,
+                    include: [
+                    {
+                        model: Category,
+                    },
+                    ],
+                },
+            ],
+            },
+        ],
+            raw: false,
+            nest: false,
+        });
     }
 }

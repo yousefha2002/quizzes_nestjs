@@ -17,6 +17,9 @@ import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { PublicQuizDto } from './dto/public-quiz.dto';
 import { QuizDto } from './dto/quiz.dto';
 import { QuizQuestionsDto } from './quiz-questions.dto';
+import { UserGuard } from 'src/common/guards/user.guard';
+import { CurrentUser } from 'src/decorators/currentUser.decorator';
+import { User } from '../user/entities/user.entity';
 
 @Controller('quiz')
 export class QuizController {
@@ -42,7 +45,7 @@ export class QuizController {
 
   @Get('byLevel/:categoryTitle/:levelTitle')
   @Serilaize(QuizListDto)
-  getByLevelAndCategory(
+  getByLevelAndCategoryForVisitor(
     @Param('categoryTitle') categoryTitle: string,
     @Param('levelTitle') levelTitle: string,
   ) {
@@ -91,5 +94,14 @@ export class QuizController {
   @Get('/admin/:quizId/details')
   quizDetailsForAdmin(@Param('quizId') quizId: string) {
     return this.quizService.getQuizDetailsForAdmin(+quizId);
+  }
+
+  @UseGuards(UserGuard)
+  @Get('loggedIn/byLevel/:categoryTitle/:levelTitle')
+  GetByLevelAndCategoryForVisitor( 
+    @Param('categoryTitle') categoryTitle: string,@Param('levelTitle') levelTitle: string,@CurrentUser() user:User
+  )
+  {
+    return this.quizService.getQuizzesWithUserStatus(levelTitle,categoryTitle,user.id)
   }
 }
