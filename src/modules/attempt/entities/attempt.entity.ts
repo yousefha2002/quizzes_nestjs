@@ -1,3 +1,4 @@
+import { Expose } from 'class-transformer';
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { AttemptStatus } from 'src/common/enums/attempt-status.enum';
 import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';

@@ -1,26 +1,10 @@
-import { Expose, Type } from "class-transformer";
+import { Expose, Type } from 'class-transformer';
+import { QuizInfoDto } from './quiz.-info.dto';
 
-class QuizInfoDto {
-    @Expose()
-    id: number;
-
-    @Expose()
-    title: string;
-    }
-
-class UserQuizDto {
+export class UserQuizDto {
     @Expose()
     @Type(() => QuizInfoDto)
     quiz: QuizInfoDto;
-
-    @Expose()
-    levelTitle: string;
-
-    @Expose()
-    categoryTitle: string;
-
-    @Expose()
-    status: string
 }
 
 export class PaginatedUserQuizzesDto {

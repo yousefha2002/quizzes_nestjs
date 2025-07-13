@@ -8,5 +8,5 @@ export class AnswerDto {
   title: string;
 
   @Expose()
-  isCorrect: boolean;
+  isCorrect?: boolean;
 }

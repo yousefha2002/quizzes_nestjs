@@ -29,6 +29,7 @@ export class QuizService {
     @Inject(repositories.quiz_repository)
     private quizModel: typeof Quiz,
 
+    @Inject(forwardRef(() => LevelService))
     private levelService: LevelService,
 
     @Inject(forwardRef(() => QuestionService))
@@ -128,13 +129,16 @@ export class QuizService {
   }
 
   async publish(id: number) {
-    // جلب الاختبار مع الأسئلة المنشورة وغير المحذوفة
     const quiz = await this.quizModel.findByPk(id, {
       include: [
         {
           model: Question,
           where: { deletedAt: null },
           required: false,
+        },
+        {
+          model: Level,
+          required: true,
         },
       ],
     });
@@ -155,6 +159,11 @@ export class QuizService {
 
     quiz.isPublished = true;
     await quiz.save();
+
+    if (quiz.level) {
+      quiz.level.lastUpdate = new Date();
+      await quiz.level.save();
+    }
 
     return { message: 'Quiz published successfully' };
   }

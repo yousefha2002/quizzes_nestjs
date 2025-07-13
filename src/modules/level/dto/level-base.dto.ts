@@ -1,8 +1,8 @@
 import { Expose } from 'class-transformer';
 
-export class LevelVisitorDto {
+export class LevelBaseDto {
     @Expose()
-    id: string;
+    id: number;
 
     @Expose()
     title: string;

@@ -1,5 +1,7 @@
+import { LevelProgressService } from './../level-progress/level-progress.service';
 import {
   BadRequestException,
+  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -15,6 +17,7 @@ import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Sequelize } from 'sequelize-typescript';
 import { Category } from '../category/entities/category.entity';
 import { LevelProgress } from '../level-progress/entities/level-progress.entity';
+import { AttemptService } from '../attempt/attempt.service';
 
 @Injectable()
 export class LevelService {
@@ -22,6 +25,10 @@ export class LevelService {
     @Inject(repositories.level_repository)
     private levelModel: typeof Level,
     private categoryService: CategoryService,
+    private levelProgressService:LevelProgressService,
+
+    @Inject(forwardRef(() => AttemptService))
+    private attemptService: AttemptService,
   ) {}
 
   async create(dto: CreateLevelDto) {
@@ -162,30 +169,55 @@ export class LevelService {
     return level;
   }
 
-  async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) {
+  async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) 
+  {
     const levels = await this.levelModel.findAll({
       include: [
         {
           model: Category,
-          where: { title: categoryTitle, isPublished: true, },
+          where: { title: categoryTitle, isPublished: true },
         },
         {
           model: Quiz,
+          required: false,
         },
         {
           model: LevelProgress,
           where: { userId },
-          attributes: ['completedQuizzes'],
+          attributes: ['completedQuizzes', 'lastUpdate'],
+          required: false,
         },
       ],
-      attributes: ['id', 'title'],
+      attributes: ['id', 'title', 'updatedAt'],
     });
 
-    return levels.map(level => ({
-      id: level.id,
-      title: level.title,
-      quizCount: level.quizzes.length,
-      completedQuizzes: level.levelProgresses[0]?.completedQuizzes || 0,
-    }));
-  }
+    const results: {
+      id: number;
+      title: string;
+      quizCount: number;
+      completedQuizzes: number;
+    }[] = [];
+    for (const level of levels) {
+      const levelUpdatedAt = level.updatedAt;
+      const progress = level.levelProgresses?.[0] as LevelProgress | undefined;
+
+      let completedCount: number;
+
+      if (!progress || levelUpdatedAt > progress.lastUpdate) {
+        const updatedProgress = await this.levelProgressService.updateLevelProgress(userId, level.id);
+        completedCount = updatedProgress?.completedQuizzes ?? 0
+      } else {
+        completedCount = progress.completedQuizzes;
+      }
+
+      results.push({
+        id: level.id,
+        title: level.title,
+        quizCount: level.quizzes.length,
+        completedQuizzes: completedCount,
+      });
+    }
+
+    return results;
+  } 
 }

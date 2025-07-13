@@ -16,11 +16,11 @@ import { AdminGuard } from 'src/common/guards/admin.guard';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
 import { LevelAdminDto } from './dto/level-admin.dto';
-import { LevelVisitorDto } from './dto/level-visitor.dto';
 import { LevelWithProgressDto } from './dto/level-with-progress.dto';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { User } from '../user/entities/user.entity';
 import { UserGuard } from 'src/common/guards/user.guard';
+import { LevelBaseDto } from './dto/level-base.dto';
 
 @Controller('level')
 export class LevelController {
@@ -54,7 +54,7 @@ export class LevelController {
     return this.levelService.findAllForAdmin(+categoryId, status);
   }
 
-  @Serilaize(LevelVisitorDto)
+  @Serilaize(LevelBaseDto)
   @Get('all/public/byCategory/:name')
   getLevelsByCategoryForVisitor(@Param('name') name: string) {
     return this.levelService.findAllPublishedByCategoryName(name.toLowerCase());

@@ -1,15 +1,7 @@
 import { Expose, Type } from "class-transformer";
+import { LevelBaseDto } from "./level-base.dto";
 
-export class LevelWithProgressDto {
-    @Expose()
-    id: number;
-
-    @Expose()
-    title: string;
-
-    @Expose()
-    quizCount: number;
-
+export class LevelWithProgressDto extends LevelBaseDto{
     @Expose()
     completedQuizzes: number;
 }

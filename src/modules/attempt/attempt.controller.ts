@@ -1,4 +1,4 @@
-import { Param, Controller, Post, UseGuards, Get, Patch, Body, Query } from '@nestjs/common';
+import { Param, Controller, UseGuards, Get, Patch, Body, Query } from '@nestjs/common';
 import { AttemptService } from './attempt.service';
 import { UserGuard } from 'src/common/guards/user.guard';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
@@ -8,7 +8,7 @@ import { AttemptWithAnswersDto } from './dto/attempt-with-answers.dto';
 import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { SubmittedAttemptDto } from './dto/submitted-attempt.dto';
 import { PaginatedUserQuizzesDto } from '../quiz/dto/user-quiz.dto';
-import { InProgressAttemptDto } from './dto/in-progress-attempt.dto';
+import { PaginattedInProgressAttemptDto } from './dto/in-progress-attempt.dto';
 
 @Controller('attempt')
 export class AttemptController {
@@ -53,14 +53,14 @@ export class AttemptController {
     @Get('user_quizzes')
     async getUserQuizzes(@CurrentUser() user: User,@Query('page') page:number,@Query('limit') limit:number) 
     {
-      return this.attemptService.getUserQuizzes(user.id,page,limit);
+      return this.attemptService.getUserPassedQuizzes(user.id,page,limit);
     }
 
-    @Serilaize(InProgressAttemptDto)
+    @Serilaize(PaginattedInProgressAttemptDto)
     @UseGuards(UserGuard)
     @Get('in-progress/user')
-    async getInProgressQuizzes(@CurrentUser() user: User)
+    async getInProgressQuizzes(@CurrentUser() user: User,@Query('page') page:number,@Query('limit') limit:number)
     {
-      return this.attemptService.getInProgressQuizzes(user.id)
+      return this.attemptService.getInProgressQuizzes(user.id,page,limit)
     }
 }

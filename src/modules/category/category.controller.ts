@@ -14,9 +14,9 @@ import { AdminGuard } from 'src/common/guards/admin.guard';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
-import { CategoryDto, PaginatedCategoriesDto } from './dto/category.dto';
+import { CategoryDto, PaginatedCategoryDto } from './dto/category.dto';
 import { PublishStatus } from 'src/common/enums/publish-status.enum';
-import { PaginatedCategoriesSummaryDto } from './dto/category-summary.dto';
+import { PaginatedCategoryInfoDto } from './dto/category-info.dto';
 
 @Controller('category')
 export class CategoryController {
@@ -41,7 +41,7 @@ export class CategoryController {
   }
 
   @UseGuards(AdminGuard)
-  @Serilaize(PaginatedCategoriesDto)
+  @Serilaize(PaginatedCategoryDto)
   @Get('admin')
   async getAllByAdmin(
     @Query('page') page: string = '1',
@@ -59,7 +59,7 @@ export class CategoryController {
     return this.categoryService.findAndCheck(+categoryId);
   }
 
-  @Serilaize(PaginatedCategoriesSummaryDto)
+  @Serilaize(PaginatedCategoryInfoDto)
   @Get('all')
   async getAllCategories(
     @Query('page') page: string = '1',

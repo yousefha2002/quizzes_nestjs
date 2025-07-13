@@ -156,91 +156,90 @@ export class AttemptService {
         return completedAttempts;
     }
 
-    async getUserQuizzes(userId: number, page = 1, limit = 1) {
-        const offset = (page - 1) * limit;
+    async getUserPassedQuizzes(userId: number, page = 1, limit = 5) 
+    {
+         const offset = (page - 1) * limit;
+            const totalAttempts = await this.attemptModel.count({
+                where: {
+                userId,
+                status: AttemptStatus.passed,
+                },
+                distinct: true,
+                col: 'quizId', 
+            });
 
-        const attempts = await this.attemptModel.findAll({
-            where: {
-            userId,
-            status: { [Op.in]: [AttemptStatus.passed, AttemptStatus.failed] },
-            },
-            include: [
-            {
-                model: Quiz,
-                attributes: ['id', 'title', 'levelId'],
+            const completedAttempts = await this.attemptModel.findAll({
+                where: {
+                userId,
+                status: AttemptStatus.passed,
+                },
                 include: [
                 {
-                    model: Level,
-                    attributes: ['title'],
-                    include: [
-                    {
-                        model: Category,
-                        attributes: ['title'],
-                    },
-                    ],
+                    model: Quiz,
+                    include: [{ model: Level, include: [{ model: Category }] }],
                 },
                 ],
-            },
-            ],
-            order: [['score', 'DESC']],
-            raw: true,
-            nest: true,
-        });
-
-        const summaryMap = new Map<
-            number,
-            {
-            quiz: { id: number; title: string };
-            levelTitle: string;
-            categoryTitle: string;
-            status: AttemptStatus.failed | AttemptStatus.passed;
-            }
-        >();
-
-        for (const attempt of attempts) {
-            const quizId = attempt.quiz.id;
-            if (!summaryMap.has(quizId)) {
-            summaryMap.set(quizId, {
-                quiz: { id: attempt.quiz.id, title: attempt.quiz.title },
-                levelTitle: attempt.quiz.level.title,
-                categoryTitle: attempt.quiz.level.category.title,
-                status: attempt.status === AttemptStatus.passed ? AttemptStatus.passed : AttemptStatus.failed,
+                limit,
+                offset,
+                order: [['submittedAt', 'DESC']], 
             });
-            }
-        }
 
-        const allSummaries = Array.from(summaryMap.values());
-        const paginated = allSummaries.slice(offset, offset + limit);
-        return {
-            quizzes: paginated,
-            totalPages: Math.ceil(allSummaries.length / limit),
-        };
+        const totalPages = Math.ceil(totalAttempts / limit);
+
+        return { quizzes: completedAttempts, totalPages };
     }
 
-    async getInProgressQuizzes(userId: number) 
+    async getInProgressQuizzes(userId: number,page = 1, limit = 5) 
     {
-        return this.attemptModel.findAll({
-            where: {
-                userId,
-                status: AttemptStatus.in_progress,
-            },
-            include: [
+        const offset = (page - 1) * limit;
+        const totalAttempts = await this.attemptModel.count({
+        where: {
+            userId,
+            status: 'in_progress',
+        },
+        });
+
+        const attempts = await this.attemptModel.findAll({
+        where: {
+            userId,
+            status: 'in_progress',
+        },
+        include: [
             {
-                model: Quiz,
-                include: [
+            model: Quiz,
+            include: [
                 {
-                    model: Level,
-                    include: [
+                model: Level,
+                include: [
                     {
-                        model: Category,
+                    model: Category,
                     },
-                    ],
+                ],
                 },
             ],
             },
         ],
-            raw: false,
-            nest: false,
+        attributes: {
+            include: [
+            [
+                literal(`(
+                SELECT COUNT(*) 
+                FROM attempt_answers 
+                WHERE attempt_answers.attemptId = attempt.id 
+                    AND attempt_answers.answerId IS NOT NULL
+                )`),
+                'answeredCount',
+            ],
+            ],
+        },
+        limit,
+        offset,
+        order: [['createdAt', 'DESC']],
         });
+        const totalPages = Math.ceil(totalAttempts / limit);
+        return {
+        attempts: attempts.map((attempt) => attempt.toJSON()),
+        totalPages,
+    };
     }
 }

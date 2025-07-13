@@ -1,13 +1,16 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { LevelService } from './level.service';
 import { LevelController } from './level.controller';
 import { LevelProvider } from './providers/level.provider';
 import { CategoryModule } from '../category/category.module';
+import { AttemptModule } from '../attempt/attempt.module';
+import { QuizModule } from '../quiz/quiz.module';
+import { LevelProgressModule } from '../level-progress/level-progress.module';
 
 @Module({
   controllers: [LevelController],
   providers: [LevelService,...LevelProvider],
-  imports:[CategoryModule],
+  imports:[CategoryModule,forwardRef(()=>AttemptModule),forwardRef(() => QuizModule),LevelProgressModule],
   exports:[LevelService]
 })
 export class LevelModule {}

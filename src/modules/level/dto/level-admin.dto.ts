@@ -1,15 +1,7 @@
 import { Expose } from 'class-transformer';
+import { LevelBaseDto } from './level-base.dto';
 
-export class LevelAdminDto {
-  @Expose()
-  id: string;
-
-  @Expose()
-  title: string;
-
+export class LevelAdminDto extends LevelBaseDto{
   @Expose()
   isPublished: boolean;
-
-  @Expose()
-  quizCount: number;
 }

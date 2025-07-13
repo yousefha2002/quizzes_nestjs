@@ -14,26 +14,31 @@ export class LevelProgressService {
         private attemptService:AttemptService
     ) {}
 
-    async updateLevelProgress(userId: number, levelId: number) {
-    const completedQuizIds = await this.attemptService.findCompletedQuizzesForLevel(userId,levelId)
-
-    let progress = await this.levelProgressModel.findOne({
-        where: { userId, levelId },
-    });
-    const completedCount = completedQuizIds.length;
-    if (!progress) {
-        progress = await this.levelProgressModel.create({
-        userId,
-        levelId,
-        completedQuizzes: completedCount,
-        lastUpdate: new Date(),
-        });
-    } else {
-        if (progress.completedQuizzes !== completedCount) {
-        progress.completedQuizzes = completedCount;
-        await progress.save();
+    async updateLevelProgress(userId: number, levelId: number) 
+    {
+        const completedQuizIds = await this.attemptService.findCompletedQuizzesForLevel(userId,levelId)
+        const completedCount = completedQuizIds.length;
+        if (completedCount === 0) {
+            return null;
         }
-    }
-    return progress;
+
+
+        let progress = await this.levelProgressModel.findOne({
+            where: { userId, levelId },
+        });
+        if (!progress) {
+                progress = await this.levelProgressModel.create({
+                userId,
+                levelId,
+                completedQuizzes: completedCount,
+                lastUpdate: new Date()
+            });
+        } else {
+            if (progress.completedQuizzes !== completedCount) {
+            progress.completedQuizzes = completedCount;
+            await progress.save();
+            }
+        }
+        return progress;
     }
 }

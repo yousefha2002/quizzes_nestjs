@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
 import { LevelInfoDto } from 'src/modules/level/dto/level-info.dto';
 
-export class PublicQuizDto {
+export class QuizInfoDto {
     @Expose()
     id: number;
 
@@ -9,13 +9,10 @@ export class PublicQuizDto {
     title: string;
 
     @Expose()
-    headline: string;
-
-    @Expose()
     numberOfQuestions: number;
 
     @Expose()
-    passScore: number;
+    passScore?: number;
 
     @Expose()
     @Type(() => LevelInfoDto)

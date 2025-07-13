@@ -8,7 +8,7 @@ import { QuestionModule } from '../question/question.module';
 @Module({
   controllers: [QuizController],
   providers: [QuizService,...QuizProvider],
-  imports:[LevelModule, forwardRef(() => QuestionModule)],
+  imports:[forwardRef(()=>LevelModule), forwardRef(() => QuestionModule)],
   exports:[QuizService]
 })
 export class QuizModule {}

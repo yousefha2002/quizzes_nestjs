@@ -1,33 +1,5 @@
 import { Expose, Type } from 'class-transformer';
-
-export class CategoryInfoDto {
-    @Expose()
-    title: string;
-}
-
-export class LevelInfoDto {
-    @Expose()
-    title: string;
-
-    @Expose()
-    @Type(() => CategoryInfoDto)
-    category: CategoryInfoDto;
-}
-
-export class QuizInfoDto {
-    @Expose()
-    id: number;
-
-    @Expose()
-    title: string;
-
-    @Expose()
-    numberOfQuestions: number;
-
-    @Expose()
-    @Type(() => LevelInfoDto)
-    level: LevelInfoDto;
-}
+import { QuizInfoDto } from 'src/modules/quiz/dto/quiz.-info.dto';
 
 export class InProgressAttemptDto {
     @Expose()
@@ -37,6 +9,17 @@ export class InProgressAttemptDto {
     createdAt: Date;
 
     @Expose()
+    answeredCount:number
+
+    @Expose()
     @Type(() => QuizInfoDto)
     quiz: QuizInfoDto;
+}
+
+export class PaginattedInProgressAttemptDto{
+    @Expose()
+    attempts:InProgressAttemptDto[]
+
+    @Expose()
+    totalPages:number
 }

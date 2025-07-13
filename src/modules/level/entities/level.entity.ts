@@ -26,6 +26,9 @@ export class Level extends Model {
     @HasMany(() => Quiz)
     quizzes: Quiz[];
 
+    @Column({ type: DataType.DATE, allowNull: false, defaultValue: DataType.NOW })
+    lastUpdate: Date
+
     @HasMany(() => Certificate)
     certificates: Certificate[];
 

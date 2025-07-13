@@ -1,12 +1,7 @@
 import { Expose, Type } from 'class-transformer';
+import { CategoryInfoDto } from './category-info.dto';
 
-export class CategoryDto {
-  @Expose()
-  id: string;
-
-  @Expose()
-  title: string;
-
+export class CategoryDto extends CategoryInfoDto {
   @Expose()
   isPublished: boolean;
 
@@ -14,11 +9,11 @@ export class CategoryDto {
   levelCount: number;
 }
 
-export class PaginatedCategoriesDto {
-  @Expose()
-  @Type(() => CategoryDto)
-  categories: CategoryDto[];
+export class PaginatedCategoryDto {
+    @Expose()
+    @Type(() => CategoryDto)
+    categories:CategoryDto[]
 
-  @Expose()
-  totalPages: number;
+    @Expose()
+    totalPages:number
 }
