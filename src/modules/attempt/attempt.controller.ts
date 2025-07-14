@@ -9,6 +9,7 @@ import { UpdateAnswerDto } from './dto/update-answer.dto';
 import { SubmittedAttemptDto } from './dto/submitted-attempt.dto';
 import { PaginatedUserQuizzesDto } from '../quiz/dto/user-quiz.dto';
 import { PaginattedInProgressAttemptDto } from './dto/in-progress-attempt.dto';
+import { PaginattedUserAttemptDto } from './dto/user-attempt.dto';
 
 @Controller('attempt')
 export class AttemptController {
@@ -62,5 +63,13 @@ export class AttemptController {
     async getInProgressQuizzes(@CurrentUser() user: User,@Query('page') page:number,@Query('limit') limit:number)
     {
       return this.attemptService.getInProgressQuizzes(user.id,page,limit)
+    }
+
+    @Serilaize(PaginattedUserAttemptDto)
+    @UseGuards(UserGuard)
+    @Get('byQuiz/:quizId/byUser')
+    async getUserAttemptsForQuiz(@CurrentUser() user: User,@Query('page') page:number,@Query('limit') limit:number,@Param('quizId') quizId:number)
+    {
+      return this.attemptService.getUserAttemptsForQuiz(user.id,quizId,page,limit)
     }
 }

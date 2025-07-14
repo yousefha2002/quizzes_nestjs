@@ -172,6 +172,7 @@ export class LevelService {
   async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) 
   {
     const levels = await this.levelModel.findAll({
+      where:{isPublished: true},
       include: [
         {
           model: Category,

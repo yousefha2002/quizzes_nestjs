@@ -1,25 +1,33 @@
 import { Expose, Type } from 'class-transformer';
 import { QuizInfoDto } from 'src/modules/quiz/dto/quiz.-info.dto';
+import { QuizDto } from 'src/modules/quiz/dto/quiz.dto';
 
-export class InProgressAttemptDto {
+export class UserAttemptDto {
     @Expose()
     id: number;
+
+    @Expose()
+    status: string;
+
+    @Expose()
+    score: number;
 
     @Expose()
     createdAt: Date;
 
     @Expose()
-    answeredCount:number
+    submittedAt?: Date;
+}
+
+export class PaginattedUserAttemptDto{
 
     @Expose()
     @Type(() => QuizInfoDto)
     quiz: QuizInfoDto;
-}
 
-export class PaginattedInProgressAttemptDto{
     @Expose()
-    @Type(() => InProgressAttemptDto)
-    attempts:InProgressAttemptDto[]
+    @Type(() => UserAttemptDto)
+    attempts:UserAttemptDto[]
 
     @Expose()
     totalPages:number

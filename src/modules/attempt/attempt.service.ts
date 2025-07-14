@@ -24,7 +24,8 @@ export class AttemptService {
         private attemptAnswerService:AttemptAnswerService,
 
         @Inject(forwardRef(() => LevelProgressService))
-        private levelProgressService:LevelProgressService
+        private levelProgressService:LevelProgressService,
+        
     ) {}
 
     async startAttempt(userId: number, quizId: number) 
@@ -241,5 +242,36 @@ export class AttemptService {
         attempts: attempts.map((attempt) => attempt.toJSON()),
         totalPages,
     };
+    }
+
+    async getUserAttemptsForQuiz(userId: number, quizId: number, page = 1, limit = 5) 
+    {
+        const quiz = await this.quizService.checkIfExist(quizId)
+        const offset = (page - 1) * limit;
+
+        const totalAttempts = await this.attemptModel.count({
+            where: {
+                userId,
+                quizId,
+            },
+        });
+
+        const attempts = await this.attemptModel.findAll({
+            where: {
+                userId,
+                quizId,
+            },
+            order: [['submittedAt', 'DESC']],
+            limit,
+            offset,
+        });
+
+        const totalPages = Math.ceil(totalAttempts / limit);
+
+        return {
+            quiz,
+            attempts,
+            totalPages,
+        };
     }
 }

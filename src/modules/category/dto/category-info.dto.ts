@@ -2,7 +2,7 @@ import { Expose, Type } from 'class-transformer';
 
 export class CategoryInfoDto {
     @Expose()
-    id: string;
+    id: number;
 
     @Expose()
     title: string;
