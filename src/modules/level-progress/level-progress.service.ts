@@ -87,7 +87,7 @@ export class LevelProgressService {
             }
 
             results.push({
-            id: progress.id,
+            id: level.id,
             title: level.title,
             quizCount: level.quizzes?.length ?? 0,
             completedQuizzes: progress.completedQuizzes,
