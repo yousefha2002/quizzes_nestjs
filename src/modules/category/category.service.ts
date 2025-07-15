@@ -78,7 +78,6 @@ export class CategoryService {
     const whereClause: any = {
       isPublished: status,
     };
-    console.log({ search });
     if (search) {
       whereClause.title = { [Op.like]: `%${search}%` };
     }

@@ -11,10 +11,13 @@ import { comparePassword, hashPassword } from 'src/common/utils/password';
 import { loginUserDto } from './dto/login-user.dto';
 import { UserPasswordDto } from './dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class UserService {
-  constructor(@Inject(repositories.user_repository) private userRepo: typeof User) {}
+  constructor(
+    @Inject(repositories.user_repository) private userRepo: typeof User,
+  ) {}
 
   async signUp(body: createUserDto) {
     const userByEmail = await this.findByEmail(body.email);
@@ -22,7 +25,10 @@ export class UserService {
       throw new BadRequestException('Email is already in use');
     }
     const passwordHased = await hashPassword(body.password);
-    const user = await this.userRepo.create({ ...body, password: passwordHased });
+    const user = await this.userRepo.create({
+      ...body,
+      password: passwordHased,
+    });
     await user.save();
     const payload = { userId: user.id };
     const access_token = generateToken(payload);
@@ -82,5 +88,36 @@ export class UserService {
 
   findById(id: number) {
     return this.userRepo.findByPk(id);
+  }
+
+  async findAllForAdmin(page: number, limit: number, search: string) {
+    const offset = (page - 1) * limit;
+    const whereClause: any = {};
+    if (search) {
+      whereClause.name = { [Op.like]: `%${search}%` };
+    }
+    const { rows, count } = await this.userRepo.findAndCountAll({
+      where: whereClause,
+      // attributes: {
+      //   include: [
+      //     [
+      //       Sequelize.literal(`(
+      //             SELECT COUNT(*)
+      //             FROM levels AS a
+      //             WHERE a.categoryId = Category.id
+      //           )`),
+      //       'levelCount',
+      //     ],
+      //   ],
+      // },
+      // raw: true,
+      limit,
+      offset,
+      order: [['createdAt', 'DESC']],
+    });
+    return {
+      users: rows,
+      totalPages: Math.ceil(count / limit),
+    };
   }
 }

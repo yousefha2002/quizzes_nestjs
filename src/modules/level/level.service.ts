@@ -25,7 +25,7 @@ export class LevelService {
     @Inject(repositories.level_repository)
     private levelModel: typeof Level,
     private categoryService: CategoryService,
-    private levelProgressService:LevelProgressService,
+    private levelProgressService: LevelProgressService,
 
     @Inject(forwardRef(() => AttemptService))
     private attemptService: AttemptService,
@@ -117,12 +117,18 @@ export class LevelService {
   }
 
   async findAllForAdmin(categoryId: number, status: PublishStatus) {
-    return this.findAllBase(categoryId, status);
+    return this.findAllBase(categoryId);
   }
 
-  async findAllBase(categoryId: number, status: PublishStatus) {
+  async findAllBase(categoryId: number, status?: PublishStatus) {
+    let whereClause: any = {};
+    whereClause.categoryId = categoryId;
+    if (status) {
+      whereClause.isPublished = status;
+    }
     const levels = await this.levelModel.findAll({
-      where: { categoryId, isPublished: status },
+      // where: { categoryId, isPublished: status },
+      where: whereClause,
       attributes: {
         include: [
           [
@@ -169,10 +175,9 @@ export class LevelService {
     return level;
   }
 
-  async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) 
-  {
+  async getLevelsWithProgressByCategory(userId: number, categoryTitle: string) {
     const levels = await this.levelModel.findAll({
-      where:{isPublished: true},
+      where: { isPublished: true },
       include: [
         {
           model: Category,
@@ -205,8 +210,9 @@ export class LevelService {
       let completedCount: number;
 
       if (!progress || levelUpdatedAt > progress.lastUpdate) {
-        const updatedProgress = await this.levelProgressService.updateLevelProgress(userId, level.id);
-        completedCount = updatedProgress?.completedQuizzes ?? 0
+        const updatedProgress =
+          await this.levelProgressService.updateLevelProgress(userId, level.id);
+        completedCount = updatedProgress?.completedQuizzes ?? 0;
       } else {
         completedCount = progress.completedQuizzes;
       }
@@ -220,5 +226,5 @@ export class LevelService {
     }
 
     return results;
-  } 
+  }
 }
