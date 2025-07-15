@@ -366,4 +366,13 @@ export class QuizService {
       };
     });
   }
+
+  async countPublishedQuizzesForLevel(levelId: number): Promise<number> {
+    return this.quizModel.count({
+      where: {
+        levelId,
+        isPublished: true,
+      },
+    });
+  }
 }

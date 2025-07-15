@@ -103,4 +103,13 @@ export class LevelProgressService {
             totalPages,
         }
     }
+
+    async findByUserAndLevel(userId: number, levelId: number) {
+        return this.levelProgressModel.findOne({
+            where: {
+            userId,
+            levelId,
+            },
+        });
+    }
 }

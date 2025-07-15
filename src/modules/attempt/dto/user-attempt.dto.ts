@@ -1,6 +1,5 @@
 import { Expose, Type } from 'class-transformer';
 import { QuizInfoDto } from 'src/modules/quiz/dto/quiz.-info.dto';
-import { QuizDto } from 'src/modules/quiz/dto/quiz.dto';
 
 export class UserAttemptDto {
     @Expose()
