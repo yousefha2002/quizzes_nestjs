@@ -5,6 +5,9 @@ import { BadRequestException, Inject, Injectable, NotFoundException } from '@nes
 import { repositories } from 'src/common/enums/repositories';
 import { Certificate } from './entities/certificate.entity';
 import { LevelService } from '../level/level.service';
+import { User } from '../user/entities/user.entity';
+import { Level } from '../level/entities/level.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class CertificateService {
@@ -83,5 +86,21 @@ export class CertificateService {
             id: newCertificate.id,
             message: 'Certificate issued successfully.',
         };
+    }
+
+    async getCertificate(userId:number,certificateId:number)
+    {
+        const certificate = await this.certificateModel.findOne({
+            where:{userId,id:certificateId},
+            include:[
+                {model:User},
+                {model:Level,include:[{model:Category}]}
+        ]
+        })
+        if(!certificate)
+        {
+            throw new NotFoundException('certificate is not found')
+        }
+        return certificate
     }
 }
