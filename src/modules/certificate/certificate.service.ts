@@ -8,6 +8,7 @@ import { LevelService } from '../level/level.service';
 import { User } from '../user/entities/user.entity';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
+import { PointsService } from '../points/points.service';
 
 @Injectable()
 export class CertificateService {
@@ -18,7 +19,8 @@ export class CertificateService {
         private quizService: QuizService,
         private levelProgressService:LevelProgressService,
         private levelService:LevelService,
-        private attemptService:AttemptService
+        private attemptService:AttemptService,
+        private pointsService :PointsService
     ){}
 
     async generateCertificate(userId: number, levelId: number) 
@@ -82,6 +84,8 @@ export class CertificateService {
             obtainedAt: new Date(),
         });
 
+        await this.pointsService.addPointsForCertificate(userId,newCertificate.id,);
+
         return {
             id: newCertificate.id,
             message: 'Certificate issued successfully.',
@@ -102,5 +106,28 @@ export class CertificateService {
             throw new NotFoundException('certificate is not found')
         }
         return certificate
+    }
+
+    async getCertificates(userId:number,page=1,limit=10 )
+    {
+        const offset = (page - 1) * limit;
+
+        const { rows, count } = await this.certificateModel.findAndCountAll({
+        where: { userId },
+        include: [
+            {
+                model: Level,
+                include: [
+                    {
+                        model: Category,
+                    },
+                ],
+            },
+        ],
+        order: [['obtainedAt', 'DESC']],
+        limit,
+        offset,
+    });
+    return {certificates:rows,totalPages: Math.ceil(count / limit)}
     }
 }

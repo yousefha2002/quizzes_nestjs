@@ -1,3 +1,4 @@
+import { PointsService } from './../points/points.service';
 import { AttemptAnswerService } from './../attempt-answer/attempt-answer.service';
 import { QuestionService } from './../question/question.service';
 import { forwardRef, Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -10,7 +11,7 @@ import { Question } from '../question/entities/question.entity';
 import { Answer } from '../answer/entities/answer.entity';
 import { Quiz } from '../quiz/entities/quiz.entity';
 import { LevelProgressService } from '../level-progress/level-progress.service';
-import { literal, Op } from 'sequelize';
+import { literal } from 'sequelize';
 import { Level } from '../level/entities/level.entity';
 import { Category } from '../category/entities/category.entity';
 
@@ -22,6 +23,7 @@ export class AttemptService {
         private quizService: QuizService,
         private questionService:QuestionService,
         private attemptAnswerService:AttemptAnswerService,
+        private pointsService:PointsService,
 
         @Inject(forwardRef(() => LevelProgressService))
         private levelProgressService:LevelProgressService,
@@ -103,8 +105,13 @@ export class AttemptService {
         attempt.submittedAt = new Date(); 
         await attempt.save();
         await this.attemptAnswerService.deleteAllAttemptAnswers(attemptId);
+        await this.pointsService.addPointsForAttempt(userId, attempt.id);
 
         if (percentage >= quiz.passScore) {
+            const alreadyGotPoint = await this.pointsService.hasAlreadyGotPassPoints(userId, quiz.id);
+            if (!alreadyGotPoint) {
+                await this.pointsService.addPointsForPassQuiz(userId, quiz.id);
+            }
             await this.levelProgressService.updateLevelProgress(userId, quiz.levelId);
         }
 
