@@ -3,6 +3,11 @@ import { Inject, Injectable } from '@nestjs/common';
 import { repositories } from 'src/common/enums/repositories';
 import { Points } from './entities/points.entity';
 import { PointsType } from 'src/common/enums/points-type.enum';
+import { Quiz } from '../quiz/entities/quiz.entity';
+import { Certificate } from '../certificate/entities/certificate.entity';
+import { Level } from '../level/entities/level.entity';
+import { Attempt } from '../attempt/entities/attempt.entity';
+import { Category } from '../category/entities/category.entity';
 
 @Injectable()
 export class PointsService {
@@ -11,11 +16,12 @@ export class PointsService {
             @Inject(repositories.points_repository)
             private pointsModel : typeof Points,
     ){}
-    async addPointsForAttempt(userId: number, attemptId: number,) 
+    async addPointsForAttempt(userId: number, attemptId: number,quizId: number) 
     {
         return this.pointsModel.create({
         userId,
         attemptId,
+        quizId,
         type: PointsType.ATTEMPT,
         points:PointsValue.ATTEMPT
         });
@@ -49,4 +55,46 @@ export class PointsService {
         });
         return !!exists;
     }
+
+    async getUserPoints(userId: number, page = 1, limit = 10) 
+    {
+        const offset = (page - 1) * limit;
+
+        const totalPointsCount = await this.pointsModel.count({
+            where: { userId },
+        });
+
+        const points = await this.pointsModel.findAll({
+            where: { userId },
+            include: [
+            {
+                model: Quiz,
+            },
+            {
+                model:Attempt
+            }
+            ,
+            {
+                model: Certificate,
+                include: [
+                {
+                    model: Level,
+                    include:[{model:Category}]
+                },
+                ],
+            },
+            ],
+            order: [['createdAt', 'DESC']],
+            limit,
+            offset,
+        });
+
+        const totalPages = Math.ceil(totalPointsCount / limit);
+
+        return {
+            points,
+            totalPages,
+        };
+        }
+
 }

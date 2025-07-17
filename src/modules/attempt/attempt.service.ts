@@ -105,7 +105,7 @@ export class AttemptService {
         attempt.submittedAt = new Date(); 
         await attempt.save();
         await this.attemptAnswerService.deleteAllAttemptAnswers(attemptId);
-        await this.pointsService.addPointsForAttempt(userId, attempt.id);
+        await this.pointsService.addPointsForAttempt(userId, attempt.id,quiz.id);
 
         if (percentage >= quiz.passScore) {
             const alreadyGotPoint = await this.pointsService.hasAlreadyGotPassPoints(userId, quiz.id);
