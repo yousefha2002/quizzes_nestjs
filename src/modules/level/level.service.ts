@@ -1,7 +1,6 @@
 import { LevelProgressService } from './../level-progress/level-progress.service';
 import {
   BadRequestException,
-  forwardRef,
   Inject,
   Injectable,
   NotFoundException,
@@ -17,7 +16,6 @@ import { PublishStatus } from 'src/common/enums/publish-status.enum';
 import { Sequelize } from 'sequelize-typescript';
 import { Category } from '../category/entities/category.entity';
 import { LevelProgress } from '../level-progress/entities/level-progress.entity';
-import { AttemptService } from '../attempt/attempt.service';
 
 @Injectable()
 export class LevelService {
@@ -26,9 +24,6 @@ export class LevelService {
     private levelModel: typeof Level,
     private categoryService: CategoryService,
     private levelProgressService: LevelProgressService,
-
-    @Inject(forwardRef(() => AttemptService))
-    private attemptService: AttemptService,
   ) {}
 
   async create(dto: CreateLevelDto) {

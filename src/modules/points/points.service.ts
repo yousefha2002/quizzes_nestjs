@@ -95,6 +95,6 @@ export class PointsService {
             points,
             totalPages,
         };
-        }
+    }
 
 }
