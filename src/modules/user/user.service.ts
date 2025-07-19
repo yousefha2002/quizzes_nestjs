@@ -63,7 +63,7 @@ export class UserService {
     }
     user.email = newEmail;
     await user.save();
-    return user;
+    return {message:"user email has changed successfully"};
   }
 
   async changePassword(body: UserPasswordDto, userId: number) {
@@ -79,7 +79,7 @@ export class UserService {
     const hashedPassword = await hashPassword(newPassword);
     user.password = hashedPassword;
     await user.save();
-    return user;
+    return {message:"user password has changed successfully"};
   }
 
   findByEmail(email: string) {
