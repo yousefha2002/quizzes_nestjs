@@ -8,6 +8,7 @@ import { Certificate } from '../certificate/entities/certificate.entity';
 import { Level } from '../level/entities/level.entity';
 import { Attempt } from '../attempt/entities/attempt.entity';
 import { Category } from '../category/entities/category.entity';
+import { col, fn } from 'sequelize';
 
 @Injectable()
 export class PointsService {
@@ -97,4 +98,13 @@ export class PointsService {
         };
     }
 
+    async getUserPointsCount(userId: number): Promise<number> {
+        const result = await this.pointsModel.findOne({
+            where: { userId },
+            attributes: [[fn('SUM', col('points')), 'totalPoints']],
+            raw: true,
+        });
+        const total = (result as unknown as { totalPoints: number })?.totalPoints;
+        return Number(total) || 0;
+    }
 }

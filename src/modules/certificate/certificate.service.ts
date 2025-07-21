@@ -130,4 +130,10 @@ export class CertificateService {
     });
     return {certificates:rows,totalPages: Math.ceil(count / limit)}
     }
+
+    async countUserCertificates(userId: number): Promise<number> {
+        return this.certificateModel.count({
+            where: { userId },
+        });
+    }
 }

@@ -13,6 +13,7 @@ import { CertificateModule } from './modules/certificate/certificate.module';
 import { PointsModule } from './modules/points/points.module';
 import { LevelProgressModule } from './modules/level-progress/level-progress.module';
 import { AttemptAnswerModule } from './modules/attempt-answer/attempt-answer.module';
+import { StatisticModule } from './modules/statistic/statistic.module';
 
 @Module({
     imports: [
@@ -30,6 +31,7 @@ import { AttemptAnswerModule } from './modules/attempt-answer/attempt-answer.mod
         PointsModule,
         LevelProgressModule,
         AttemptAnswerModule,
+        StatisticModule,
     ]
 })
 export class AppModule {}

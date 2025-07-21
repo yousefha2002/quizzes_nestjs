@@ -11,6 +11,7 @@ import { PointsModule } from '../points/points.module';
 @Module({
   controllers: [CertificateController],
   providers: [CertificateService,...CertificateProvider],
-  imports:[LevelProgressModule,QuizModule,LevelModule,AttemptModule,PointsModule]
+  imports:[LevelProgressModule,QuizModule,LevelModule,AttemptModule,PointsModule],
+  exports:[CertificateService]
 })
 export class CertificateModule {}

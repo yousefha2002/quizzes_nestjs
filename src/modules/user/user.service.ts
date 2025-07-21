@@ -98,19 +98,6 @@ export class UserService {
     }
     const { rows, count } = await this.userRepo.findAndCountAll({
       where: whereClause,
-      // attributes: {
-      //   include: [
-      //     [
-      //       Sequelize.literal(`(
-      //             SELECT COUNT(*)
-      //             FROM levels AS a
-      //             WHERE a.categoryId = Category.id
-      //           )`),
-      //       'levelCount',
-      //     ],
-      //   ],
-      // },
-      // raw: true,
       limit,
       offset,
       order: [['createdAt', 'DESC']],

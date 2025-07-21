@@ -281,4 +281,23 @@ export class AttemptService {
             totalPages,
         };
     }
+
+    async countAllAttempts(userId: number): Promise<number> {
+        return this.attemptModel.count({
+            where: { userId },
+        });
+    }
+
+    async countPassedQuizzes(userId: number): Promise<number> {
+        const results = await this.attemptModel.findAll({
+            where: {
+                userId,
+                status: 'passed',
+            },
+            attributes: ['quizId'],
+            group: ['quizId'],
+            raw: true,
+        });
+        return results.length;
+    }
 }

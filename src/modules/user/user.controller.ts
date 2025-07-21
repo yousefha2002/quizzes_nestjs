@@ -4,7 +4,7 @@ import { createUserDto } from './dto/create-user.dto';
 import { loginUserDto } from './dto/login-user.dto';
 import { AdminGuard } from 'src/common/guards/admin.guard';
 import { Serilaize } from 'src/common/interceptors/serialize.interceptor';
-import { PaginatedUserDto } from './dto/user.dto';
+import { PaginatedUserDto, UserDto } from './dto/user.dto';
 import { UserGuard } from 'src/common/guards/user.guard';
 import { UserEmailDto } from './dto/user-email.dto';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
@@ -48,5 +48,13 @@ export class UserController {
   async changePassword(@Body() dto:UserPasswordDto,@CurrentUser() user:User)
   {
     return this.userService.changePassword(dto,user.id)
+  }
+
+  @Serilaize(UserDto)
+  @Get()
+  @UseGuards(UserGuard)
+  getUser(@CurrentUser() user:User)
+  {
+    return this.userService.findById(user.id)
   }
 }
