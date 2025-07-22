@@ -10,6 +10,7 @@ import { UserEmailDto } from './dto/user-email.dto';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { User } from './entities/user.entity';
 import { UserPasswordDto } from './dto/user-password.dto';
+import { UserNameDto } from './dto/user-name.dto';
 
 @Controller('user')
 export class UserController {
@@ -40,14 +41,14 @@ export class UserController {
   @UseGuards(UserGuard)
   async changeEmail(@Body() dto:UserEmailDto,@CurrentUser() user:User)
   {
-    return this.userService.changeEmail(dto.newEmail,user.id)
+    return this.userService.changeEmail(dto.newEmail,user)
   }
 
   @Put('password')
   @UseGuards(UserGuard)
   async changePassword(@Body() dto:UserPasswordDto,@CurrentUser() user:User)
   {
-    return this.userService.changePassword(dto,user.id)
+    return this.userService.changePassword(dto,user)
   }
 
   @Serilaize(UserDto)
@@ -56,5 +57,11 @@ export class UserController {
   getUser(@CurrentUser() user:User)
   {
     return this.userService.findById(user.id)
+  }
+
+  @Put('name')
+  @UseGuards(UserGuard)
+  async changeName(@Body() dto: UserNameDto, @CurrentUser() user: User) {
+    return this.userService.changeName(dto.name, user);
   }
 }
