@@ -52,11 +52,7 @@ export class UserService {
     };
   }
 
-  async changeEmail(newEmail: string, userId: number) {
-    const user = await this.findById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
+  async changeEmail(newEmail: string, user: User) {
     const userByEmail = await this.findByEmail(newEmail);
     if (userByEmail) {
       throw new BadRequestException('Email is already in use');
@@ -66,12 +62,15 @@ export class UserService {
     return {message:"user email has changed successfully"};
   }
 
-  async changePassword(body: UserPasswordDto, userId: number) {
-    const { oldPassword, newPassword } = body;
-    const user = await this.findById(userId);
-    if (!user) {
-      throw new NotFoundException('User not found');
+  async changeName(newName: string, user: User) 
+  {
+      user.name = newName;
+      await user.save();
+      return { message: 'User name has been changed successfully' };
     }
+
+  async changePassword(body: UserPasswordDto, user: User) {
+    const { oldPassword, newPassword } = body;
     const isMatch = await comparePassword(oldPassword, user.password);
     if (!isMatch) {
       throw new BadRequestException('Incorrect password');
