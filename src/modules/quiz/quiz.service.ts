@@ -288,12 +288,14 @@ export class QuizService {
 
   findById(id: number) {
     return this.quizModel.findByPk(id, {
-      include: ['attempts'], 
+      include: ['attempts'],
     });
   }
 
   async checkIfExist(id: number) {
-    const quiz = await this.quizModel.findOne({where:{id,isPublished:true}});
+    const quiz = await this.quizModel.findOne({
+      where: { id, isPublished: true },
+    });
     if (!quiz) {
       throw new NotFoundException('Quiz not found');
     }
@@ -319,14 +321,31 @@ export class QuizService {
           include: [{ model: Answer }],
         },
       ],
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM attempts AS a 
+                            WHERE a.quizId = Quiz.id
+                          )`),
+            'attemptsCount',
+          ],
+        ],
+      },
+      order: [[{ model: Question, as: 'questions' }, 'createdAt', 'DESC']], // ✅ Correct way
     });
     if (!quiz) {
       throw new BadRequestException('Quiz not found');
     }
-    return quiz;
+    return quiz.toJSON();
   }
 
-  async getQuizzesWithUserStatus(level: string,category:string, userId: number) {
+  async getQuizzesWithUserStatus(
+    level: string,
+    category: string,
+    userId: number,
+  ) {
     const quizzes = await this.quizModel.findAll({
       where: {
         isPublished: true,
@@ -335,34 +354,36 @@ export class QuizService {
         {
           model: Level,
           required: true,
-          where: { isPublished: true,title:level },
+          where: { isPublished: true, title: level },
           include: [
             {
               model: Category,
               required: true,
-              where: { isPublished: true,title:category },
+              where: { isPublished: true, title: category },
             },
           ],
         },
         {
-          model:Attempt,
-            where: {
-              userId,
-              status: { [Op.in]: [AttemptStatus.passed, AttemptStatus.failed] }, 
+          model: Attempt,
+          where: {
+            userId,
+            status: { [Op.in]: [AttemptStatus.passed, AttemptStatus.failed] },
           },
           required: false,
         },
       ],
-    })
+    });
 
     return quizzes.map((quiz) => {
       const attempts = quiz.attempts || [];
-      const hasPassed = attempts.some(a => a.status === AttemptStatus.passed);
+      const hasPassed = attempts.some((a) => a.status === AttemptStatus.passed);
       return {
         id: quiz.id,
         title: quiz.title,
         numberOfQuestions: quiz.numberOfQuestions,
-        ...(attempts.length > 0 &&{userStatus: hasPassed ? AttemptStatus.passed : AttemptStatus.failed,})
+        ...(attempts.length > 0 && {
+          userStatus: hasPassed ? AttemptStatus.passed : AttemptStatus.failed,
+        }),
       };
     });
   }

@@ -12,6 +12,7 @@ import { loginUserDto } from './dto/login-user.dto';
 import { UserPasswordDto } from './dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class UserService {
@@ -59,7 +60,7 @@ export class UserService {
     }
     user.email = newEmail;
     await user.save();
-    return {message:"user email has changed successfully"};
+    return { message: 'user email has changed successfully' };
   }
 
   async changeName(newName: string, user: User) 
@@ -78,7 +79,7 @@ export class UserService {
     const hashedPassword = await hashPassword(newPassword);
     user.password = hashedPassword;
     await user.save();
-    return {message:"user password has changed successfully"};
+    return { message: 'user password has changed successfully' };
   }
 
   findByEmail(email: string) {
@@ -97,6 +98,19 @@ export class UserService {
     }
     const { rows, count } = await this.userRepo.findAndCountAll({
       where: whereClause,
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+                  SELECT COUNT(*)
+                  FROM points AS a
+                  WHERE a.userId = User.id
+                )`),
+            'pointsCount',
+          ],
+        ],
+      },
+      raw: true,
       limit,
       offset,
       order: [['createdAt', 'DESC']],
