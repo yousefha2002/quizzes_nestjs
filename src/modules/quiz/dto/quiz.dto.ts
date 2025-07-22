@@ -21,6 +21,9 @@ export class QuizDto {
   isPublished: boolean;
 
   @Expose()
+  attemptsCount: number;
+
+  @Expose()
   @Type(() => QuestionDto)
   questions: QuestionDto[];
 }

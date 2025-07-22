@@ -98,10 +98,15 @@ export class QuizController {
 
   @UseGuards(UserGuard)
   @Get('loggedIn/byLevel/:categoryTitle/:levelTitle')
-  GetByLevelAndCategoryForVisitor( 
-    @Param('categoryTitle') categoryTitle: string,@Param('levelTitle') levelTitle: string,@CurrentUser() user:User
-  )
-  {
-    return this.quizService.getQuizzesWithUserStatus(levelTitle,categoryTitle,user.id)
+  GetByLevelAndCategoryForVisitor(
+    @Param('categoryTitle') categoryTitle: string,
+    @Param('levelTitle') levelTitle: string,
+    @CurrentUser() user: User,
+  ) {
+    return this.quizService.getQuizzesWithUserStatus(
+      levelTitle,
+      categoryTitle,
+      user.id,
+    );
   }
 }

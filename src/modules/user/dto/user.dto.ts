@@ -12,6 +12,9 @@ export class UserDto {
 
   @Expose()
   createdAt: string;
+
+  @Expose()
+  pointsCount: number;
 }
 
 export class PaginatedUserDto {

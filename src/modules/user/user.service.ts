@@ -12,6 +12,7 @@ import { loginUserDto } from './dto/login-user.dto';
 import { UserPasswordDto } from './dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class UserService {
@@ -98,19 +99,19 @@ export class UserService {
     }
     const { rows, count } = await this.userRepo.findAndCountAll({
       where: whereClause,
-      // attributes: {
-      //   include: [
-      //     [
-      //       Sequelize.literal(`(
-      //             SELECT COUNT(*)
-      //             FROM levels AS a
-      //             WHERE a.categoryId = Category.id
-      //           )`),
-      //       'levelCount',
-      //     ],
-      //   ],
-      // },
-      // raw: true,
+      attributes: {
+        include: [
+          [
+            Sequelize.literal(`(
+                  SELECT COUNT(*)
+                  FROM points AS a
+                  WHERE a.userId = User.id
+                )`),
+            'pointsCount',
+          ],
+        ],
+      },
+      raw: true,
       limit,
       offset,
       order: [['createdAt', 'DESC']],
