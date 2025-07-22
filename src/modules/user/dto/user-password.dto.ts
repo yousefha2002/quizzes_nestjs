@@ -1,11 +1,13 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class UserPasswordDto {
-  @IsString({ message: 'كلمة المرور الجديدة يجب أن تكون نصًا' })
-  @IsNotEmpty({ message: 'كلمة المرور الجديدة مطلوبة' })
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @MaxLength(20, { message: 'Password must be at most 20 characters' })
   newPassword: string;
 
-  @IsString({ message: 'كلمة المرور القديمة يجب أن تكون نصًا' })
-  @IsNotEmpty({ message: 'كلمة المرور القديمة مطلوبة' })
+  @IsString()
+  @IsNotEmpty()
   oldPassword: string;
 }

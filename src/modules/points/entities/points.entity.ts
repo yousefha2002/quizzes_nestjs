@@ -17,6 +17,9 @@ export class Points extends Model {
     @Column({type: DataType.ENUM(...Object.values(PointsType)),allowNull: false, })
     type: string;
 
+    @Column({ type: DataType.INTEGER, allowNull: false })
+    points: number;
+
     @ForeignKey(() => Quiz)
     @Column({ allowNull: true })
     quizId: number;
