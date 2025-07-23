@@ -63,18 +63,17 @@ export class UserService {
     return { message: 'user email has changed successfully' };
   }
 
-  async changeName(newName: string, user: User) 
-  {
-      user.name = newName;
-      await user.save();
-      return { message: 'User name has been changed successfully' };
-    }
+  async changeName(newName: string, user: User) {
+    user.name = newName;
+    await user.save();
+    return { message: 'User name has been changed successfully' };
+  }
 
   async changePassword(body: UserPasswordDto, user: User) {
     const { oldPassword, newPassword } = body;
     const isMatch = await comparePassword(oldPassword, user.password);
     if (!isMatch) {
-      throw new BadRequestException('Incorrect password');
+      throw new BadRequestException('Incorrect old password');
     }
     const hashedPassword = await hashPassword(newPassword);
     user.password = hashedPassword;
