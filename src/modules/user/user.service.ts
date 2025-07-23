@@ -11,8 +11,9 @@ import { comparePassword, hashPassword } from 'src/common/utils/password';
 import { loginUserDto } from './dto/login-user.dto';
 import { UserPasswordDto } from './dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
-import { Op } from 'sequelize';
+import { Op,QueryTypes } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
+import { Points } from '../points/entities/points.entity';
 
 @Injectable()
 export class UserService {
@@ -119,5 +120,33 @@ export class UserService {
       users: rows,
       totalPages: Math.ceil(count / limit),
     };
+  }
+
+  async getTopUsers(limit = 10) 
+  {
+    const users = await this.userRepo.findAll({
+      attributes: [
+        'id',
+        'name',
+        [
+          Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('points.points')), 0),
+          'pointsCount',
+        ],
+      ],
+      include: [
+        {
+          model: Points,
+          attributes: [],
+          required: false,
+        },
+      ],
+      group: ['User.id'],
+      order: [[Sequelize.literal('pointsCount'), 'DESC']],
+      limit,
+      raw: true,
+      subQuery: false, 
+    });
+
+    return users;
   }
 }
