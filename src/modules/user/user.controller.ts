@@ -64,4 +64,10 @@ export class UserController {
   async changeName(@Body() dto: UserNameDto, @CurrentUser() user: User) {
     return this.userService.changeName(dto.name, user);
   }
+
+  @Get('top')
+  async getTopUsers(@Query('limit') limit:number)
+  {
+    return this.userService.getTopUsers(limit)
+  }
 }
