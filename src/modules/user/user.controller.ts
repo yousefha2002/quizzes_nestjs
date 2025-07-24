@@ -10,7 +10,7 @@ import { UserEmailDto } from './dto/user-email.dto';
 import { CurrentUser } from 'src/decorators/currentUser.decorator';
 import { User } from './entities/user.entity';
 import { UserPasswordDto } from './dto/user-password.dto';
-import { UserNameDto } from './dto/user-name.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('user')
 export class UserController {
@@ -59,15 +59,22 @@ export class UserController {
     return this.userService.findById(user.id)
   }
 
-  @Put('name')
+  @Put('profile')
   @UseGuards(UserGuard)
-  async changeName(@Body() dto: UserNameDto, @CurrentUser() user: User) {
-    return this.userService.changeName(dto.name, user);
+  async updateProfile(@Body() dto: UpdateProfileDto, @CurrentUser() user: User) {
+    return this.userService.updateProfile(dto, user);
   }
 
   @Get('top')
   async getTopUsers(@Query('limit') limit:number)
   {
     return this.userService.getTopUsers(limit)
+  }
+
+  @UseGuards(UserGuard)
+  @Get('rank')
+  async getUserRank(@CurrentUser() user:User)
+  {
+    return this.userService.getUserRank(user.id)
   }
 }

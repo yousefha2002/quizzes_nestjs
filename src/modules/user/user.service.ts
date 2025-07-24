@@ -11,9 +11,9 @@ import { comparePassword, hashPassword } from 'src/common/utils/password';
 import { loginUserDto } from './dto/login-user.dto';
 import { UserPasswordDto } from './dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
-import { Op,QueryTypes } from 'sequelize';
+import { col, fn, Op,QueryTypes, where } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
-import { Points } from '../points/entities/points.entity';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Injectable()
 export class UserService {
@@ -64,12 +64,27 @@ export class UserService {
     return { message: 'user email has changed successfully' };
   }
 
-  async changeName(newName: string, user: User) 
-  {
-      user.name = newName;
-      await user.save();
-      return { message: 'User name has been changed successfully' };
+  async updateProfile(dto: UpdateProfileDto, user: User) {
+    const { name, bio } = dto;
+    if (name && name.toLowerCase() !== user.name.toLowerCase()) {
+      const existingUser = await this.userRepo.findOne({
+        where: {
+          [Op.and]: [
+            where(fn('LOWER', col('name')), name.toLowerCase()),
+            { id: { [Op.ne]: user.id } },
+          ],
+        },
+      });
+      if (existingUser) {
+        throw new BadRequestException('Name is already in use');
+      }
+      user.name = name;
     }
+    user.bio = bio ?? user.bio;
+    await user.save();
+    return { message: 'Profile updated successfully' };
+  }
+
 
   async changePassword(body: UserPasswordDto, user: User) {
     const { oldPassword, newPassword } = body;
@@ -124,29 +139,58 @@ export class UserService {
 
   async getTopUsers(limit = 10) 
   {
-    const users = await this.userRepo.findAll({
-      attributes: [
-        'id',
-        'name',
-        [
-          Sequelize.fn('COALESCE', Sequelize.fn('SUM', Sequelize.col('points.points')), 0),
-          'pointsCount',
-        ],
-      ],
-      include: [
-        {
-          model: Points,
-          attributes: [],
-          required: false,
-        },
-      ],
-      group: ['User.id'],
-      order: [[Sequelize.literal('pointsCount'), 'DESC']],
-      limit,
-      raw: true,
-      subQuery: false, 
+    const sql = `
+    SELECT id, name, pointsCount, userRank FROM (
+      SELECT 
+        u.id,
+        u.name,
+        COALESCE(SUM(p.points), 0) AS pointsCount,
+        RANK() OVER (ORDER BY COALESCE(SUM(p.points), 0) DESC) AS userRank
+      FROM users u
+      LEFT JOIN points p ON u.id = p.userId
+      GROUP BY u.id, u.name
+    ) ranked_users
+    ORDER BY userRank
+    LIMIT :limit
+  `;
+
+  const users = await this.userRepo.sequelize?.query(sql, {
+    replacements: { limit },
+    type: QueryTypes.SELECT,
+  });
+
+  return users;
+  }
+
+  async getUserRank(userId: number)
+    {
+      const sql = `
+      SELECT id, name, pointsCount, userRank FROM (
+        SELECT u.id,
+              u.name,
+              COALESCE(SUM(p.points), 0) AS pointsCount,
+              RANK() OVER (ORDER BY COALESCE(SUM(p.points), 0) DESC) AS userRank
+        FROM users u
+        LEFT JOIN points p ON u.id = p.userId
+        GROUP BY u.id, u.name
+      ) ranked_users
+      WHERE ranked_users.id = :userId
+    `;
+
+    const result = await this.userRepo.sequelize?.query(sql, {
+      replacements: { userId },
+      type: QueryTypes.SELECT,
     });
 
-    return users;
+    if (!result || result.length === 0) return null;
+
+    const user = result[0] as any;
+
+    return {
+      id: user.id,
+      name: user.name,
+      pointsCount: Number(user.pointsCount),
+      userRank: Number(user.userRank),
+    };
   }
 }

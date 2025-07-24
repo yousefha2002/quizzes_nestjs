@@ -9,7 +9,7 @@ export class User extends Model {
   @Column({ primaryKey: true, autoIncrement: true })
   id: number;
 
-  @Column({ type: DataType.STRING, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false, unique: true })
   name: string;
 
   @Column({ type: DataType.STRING, allowNull: false,unique: true })
@@ -17,6 +17,9 @@ export class User extends Model {
 
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
+
+  @Column({ type: DataType.STRING(500), allowNull: true })
+  bio: string;
 
   @HasMany(() => Attempt)
   attempts: Attempt[];

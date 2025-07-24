@@ -11,6 +11,9 @@ export class UserDto {
   name: string;
 
   @Expose()
+  bio: string;
+
+  @Expose()
   createdAt: string;
 
   @Expose()
