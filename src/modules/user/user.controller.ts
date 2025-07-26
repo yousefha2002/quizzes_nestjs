@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { createUserDto } from './dto/create-user.dto';
 import { loginUserDto } from './dto/login-user.dto';
@@ -76,5 +76,11 @@ export class UserController {
   async getUserRank(@CurrentUser() user:User)
   {
     return this.userService.getUserRank(user.id)
+  }
+
+  @Get('profile/:id')
+  getUserProfile(@Param('id') id:number)
+  {
+    return this.userService.getUserProfileData(id)
   }
 }

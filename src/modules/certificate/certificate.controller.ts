@@ -27,6 +27,13 @@ export class CertificateController {
       return this.certificateService.getCertificates(user.id,page,limit)
     }
 
+    @Serilaize(PaginatedCertificateListDto)
+    @Get('byUser/:userId')
+    async getAllCertificatesByUser(@Query('page') page:number,@Query('limit') limit:number,@Param("userId") userId:number)
+    {
+      return this.certificateService.getCertificates(userId,page,limit)
+    }
+
     @Serilaize(CertificateDto)
     @UseGuards(UserGuard)
     @Get(':certificateId')

@@ -14,6 +14,9 @@ import { generateToken } from 'src/common/utils/generateToken';
 import { col, fn, Op,QueryTypes, where } from 'sequelize';
 import { Sequelize } from 'sequelize-typescript';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Points } from '../points/entities/points.entity';
+import { Attempt } from '../attempt/entities/attempt.entity';
+import { Certificate } from '../certificate/entities/certificate.entity';
 
 @Injectable()
 export class UserService {
@@ -196,6 +199,33 @@ export class UserService {
       name: user.name,
       pointsCount: Number(user.pointsCount),
       userRank: Number(user.userRank),
+    };
+  }
+
+  async getUserProfileData(userId: number) 
+  {
+    const user = await this.userRepo.findByPk(userId, {
+      include: [
+        { model: Points },
+        { model: Attempt },
+        {model:Certificate}
+      ],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const totalPoints = user.points?.reduce((sum, point) => sum + point.points, 0) || 0;
+
+    return {
+      id: user.id,
+      name: user.name,
+      bio: user.bio,
+      createdAt: user.createdAt,
+      totalPoints,
+      certificates:user.certificates?.length||0,
+      attemptsCount: user.attempts?.length || 0,
     };
   }
 }
