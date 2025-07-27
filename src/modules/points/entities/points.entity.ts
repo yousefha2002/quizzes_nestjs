@@ -5,7 +5,12 @@ import { Certificate } from 'src/modules/certificate/entities/certificate.entity
 import { Quiz } from 'src/modules/quiz/entities/quiz.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 
-@Table({ tableName: 'points', timestamps: true })
+@Table({ tableName: 'points', timestamps: true ,
+    indexes:[
+        {fields: ['userId']},
+        {fields: ['userId', 'quizId', 'type']}
+    ]
+})
 export class Points extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;

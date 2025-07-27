@@ -4,7 +4,12 @@ import { Certificate } from 'src/modules/certificate/entities/certificate.entity
 import { LevelProgress } from 'src/modules/level-progress/entities/level-progress.entity';
 import { Quiz } from 'src/modules/quiz/entities/quiz.entity';
 
-@Table({ tableName: 'levels', timestamps: true })
+@Table({ tableName: 'levels', timestamps: true ,
+    indexes: [
+        { fields: ['categoryId', 'title'] },
+        { fields: ['categoryId', 'isPublished'] },
+    ]
+})
 export class Level extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;

@@ -2,7 +2,9 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo } from 'sequelize
 import { Level } from 'src/modules/level/entities/level.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 
-@Table({ tableName: 'level_progresses', timestamps: true })
+@Table({ tableName: 'level_progresses', timestamps: true,
+        indexes:[{fields: ['userId', 'levelId']}]
+    })
 export class LevelProgress extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;

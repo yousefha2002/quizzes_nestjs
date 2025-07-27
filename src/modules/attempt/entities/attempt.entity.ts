@@ -1,11 +1,23 @@
-import { Expose } from 'class-transformer';
 import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from 'sequelize-typescript';
 import { AttemptStatus } from 'src/common/enums/attempt-status.enum';
 import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';
 import { Quiz } from 'src/modules/quiz/entities/quiz.entity';
 import { User } from 'src/modules/user/entities/user.entity';
 
-@Table({ tableName: 'attempts', timestamps: true })
+@Table({ 
+    tableName: 'attempts', timestamps: true ,
+    indexes: [
+        {
+        fields: ['userId', 'status', 'submittedAt'],
+        },
+        {
+        fields: ['userId', 'quizId', 'status'],
+        },
+        {
+        fields: ['userId', 'quizId', 'submittedAt'],
+        },
+    ]
+},)
 export class Attempt extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;

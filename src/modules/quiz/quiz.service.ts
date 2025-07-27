@@ -169,7 +169,6 @@ export class QuizService {
   }
 
   async findAllByLevelAndCategory(levelTitle: string, categoryTitle: string) {
-    // جلب المستوى بناءً على العنوان والفئة
     const level = await this.levelService.findByTitleAndCategory(
       levelTitle,
       categoryTitle,
@@ -179,7 +178,6 @@ export class QuizService {
       throw new NotFoundException('Level not found or not published');
     }
 
-    // جلب جميع الاختبارات المنشورة التابعة للمستوى
     const quizzes = await this.quizModel.findAll({
       where: {
         levelId: level.id,
@@ -237,7 +235,6 @@ export class QuizService {
       },
       order: [['createdAt', 'DESC']],
     });
-
     return quizzes;
   }
 
@@ -260,7 +257,6 @@ export class QuizService {
       throw new BadRequestException('Level or Category is not published');
     }
 
-    // حساب عدد الأسئلة المنشورة وغير المحذوفة
     const totalQuestions = await Question.count({
       where: {
         quizId: quiz.id,
@@ -274,7 +270,6 @@ export class QuizService {
       );
     }
 
-    // جلب الأسئلة بشكل عشوائي مع الإجابات
     const questions = await this.questionService.getRandomQuestionsForQuiz(
       quizId,
       quiz.numberOfQuestions,

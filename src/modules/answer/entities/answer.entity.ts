@@ -2,7 +2,14 @@ import { Table, Column, Model, DataType, ForeignKey, BelongsTo, HasMany } from '
 import { AttemptAnswer } from 'src/modules/attempt-answer/entities/attempt-answer.entity';
 import { Question } from 'src/modules/question/entities/question.entity';
 
-@Table({ tableName: 'answers', timestamps: true })
+@Table({ 
+    tableName: 'answers', timestamps: true ,
+    indexes: [
+        {
+            fields: ['questionId'],
+        },
+    ]
+})
 export class Answer extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id: number;
