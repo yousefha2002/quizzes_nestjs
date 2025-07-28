@@ -9,13 +9,11 @@ import { Admin } from './entities/admin.entity';
 import { comparePassword, hashPassword } from 'src/common/utils/password';
 import { UserPasswordDto } from '../user/dto/user-password.dto';
 import { generateToken } from 'src/common/utils/generateToken';
-import { UserService } from '../user/user.service';
 
 @Injectable()
 export class AdminService {
   constructor(
     @Inject(repositories.admin_repository) private adminRepo: typeof Admin,
-    private readonly userService: UserService,
   ) {}
 
   async signup(email: string, password: string) {
@@ -83,6 +81,11 @@ export class AdminService {
 
   findOne() {
     return this.adminRepo.findOne();
+  }
+
+  findOneById(id:number)
+  {
+    return this.adminRepo.findByPk(id)
   }
 
   async create(email: string, password: string) {

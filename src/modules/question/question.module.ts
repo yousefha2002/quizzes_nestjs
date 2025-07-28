@@ -4,11 +4,12 @@ import { QuestionController } from './question.controller';
 import { QuestionProvider } from './providers/question.provider';
 import { AnswerModule } from '../answer/answer.module';
 import { QuizModule } from '../quiz/quiz.module';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   controllers: [QuestionController],
   providers: [QuestionService,...QuestionProvider],
-  imports:[AnswerModule, forwardRef(() => QuizModule)],
+  imports:[AnswerModule, forwardRef(() => QuizModule),AdminModule],
   exports:[QuestionService]
 })
 export class QuestionModule {}

@@ -4,6 +4,7 @@ import { UserController } from './user.controller';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UserInterceptor } from './interceptors/user.interceptor';
 import { UserProvider } from './providers/user.provider';
+import { AdminModule } from '../admin/admin.module';
 
 @Module({
   controllers: [UserController],
@@ -16,5 +17,6 @@ import { UserProvider } from './providers/user.provider';
     },
   ],
   exports: [UserService],
+  imports:[AdminModule]
 })
 export class UserModule {}
